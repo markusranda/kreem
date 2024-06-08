@@ -114,13 +114,27 @@ local function spawn_enemy()
     local width, height = love.graphics.getWidth(), love.graphics.getHeight()
 
     -- Generate a random position within the window
-    local function getRandomPosition()
-        local x = love.math.random(0, width)
-        local y = love.math.random(0, height)
+    local function getRandomBorderPosition()
+        local side = love.math.random(1, 4)
+        local x, y
+
+        if side == 1 then -- top
+            x = love.math.random(0, width)
+            y = 0
+        elseif side == 2 then -- right
+            x = width
+            y = love.math.random(0, height)
+        elseif side == 3 then -- bottom
+            x = love.math.random(0, width)
+            y = height
+        else -- left
+            x = 0
+            y = love.math.random(0, height)
+        end
+
         return x, y
     end
-
-    local posX, posY = getRandomPosition()
+    local posX, posY = getRandomBorderPosition()
     local enemy = enemy.CreateEnemy(posX, posY)
     enemy_dmg_timer[enemy.id] = 0
     table.insert(Enemies, enemy)
