@@ -26,7 +26,8 @@ function love.load()
         direction = { x = 0, y = -1 },
         dmg = 50,
         radius = 16,
-        hp = 100
+        hp = 100,
+        upgrades = {}
     }
     Player = player
 
@@ -44,6 +45,12 @@ function love.draw()
     local angle = math.atan2(Player.direction.y, Player.direction.x) - math.pi / 2
     love.graphics.draw(Player.sprite, Player.x, Player.y, angle, 1, 1, Player.sprite:getWidth() / 2,
         Player.sprite:getHeight() / 2)
+
+    for key, bool in pairs(Player.upgrades) do
+        local width = love.graphics.getWidth()
+        love.graphics.print(key, width - 15 - love.graphics.getFont():getWidth(key), 15)
+    end
+
 
     for key, projectile in pairs(Projectiles) do
         love.graphics.print(projectile.name, projectile.x, projectile.y)
@@ -160,7 +167,7 @@ local function remove_enemy(key, selectedEnemy)
     Enemies[key] = nil
 
     local rand = math.random()
-    if rand <= 0.10 then
+    if rand <= 1 then
         local powerupEntity = powerup.CreatePowerup(selectedEnemy.x, selectedEnemy.y)
         table.insert(Powerups, powerupEntity)
     end
@@ -212,29 +219,82 @@ local function handle_enemy_dmg_timers(dt)
     end
 end
 
+local function fire_single_shot(x, y)
+    -- Calculate the difference in coordinates
+    local dx = x - Player.x
+    local dy = y - Player.y
+    local length = math.sqrt(dx * dx + dy * dy)
+
+    -- Normalize the vector (make it unit length)
+    if length ~= 0 then
+        dx = dx / length
+        dy = dy / length
+    end
+
+    local direction = { x = dx, y = dy }
+    table.insert(Projectiles, projectile.CreateProjectile(direction))
+    shooting_cooldown_timer = SHOOTING_COOLDOWN
+end
+
+local function fire_shotgun_shot(x, y)
+    print("Firing shotgun")
+    -- Calculate the difference in coordinates
+    local dx = x - Player.x
+    local dy = y - Player.y
+    local length = math.sqrt(dx * dx + dy * dy)
+
+    -- Normalize the vector (make it unit length)
+    if length ~= 0 then
+        dx = dx / length
+        dy = dy / length
+    end
+
+    -- Create three directions with a slight angle offset
+    local angleOffset = math.rad(10) -- 10 degree offset
+    local baseAngle = math.atan2(dy, dx)
+    local directions = {
+        { x = math.cos(baseAngle - angleOffset), y = math.sin(baseAngle - angleOffset) },
+        { x = dx,                                y = dy }, -- original direction
+        { x = math.cos(baseAngle + angleOffset), y = math.sin(baseAngle + angleOffset) }
+    }
+
+    -- Create and insert three projectiles with the different directions
+    for _, dir in ipairs(directions) do
+        table.insert(Projectiles, projectile.CreateProjectile(dir))
+    end
+
+    shooting_cooldown_timer = SHOOTING_COOLDOWN
+end
+
 function love.mousepressed(x, y, button, istouch, presses)
     -- 1 represents the left mouse button
     if button == 1 and shooting_cooldown_timer <= 0 then
-        -- Calculate the difference in coordinates
-        local dx = x - Player.x
-        local dy = y - Player.y
-        local length = math.sqrt(dx * dx + dy * dy)
-
-        -- Normalize the vector (make it unit length)
-        if length ~= 0 then
-            dx = dx / length
-            dy = dy / length
+        for key, value in pairs(Player.upgrades) do
+            print(value)
         end
 
-        local direction = { x = dx, y = dy }
-        table.insert(Projectiles, projectile.CreateProjectile(direction))
-        shooting_cooldown_timer = SHOOTING_COOLDOWN
+        if Player.upgrades["shotgun"] ~= nil then
+            fire_shotgun_shot(x, y)
+        else
+            fire_single_shot(x, y)
+        end
     end
 end
 
 local function handle_shooting_timer(dt)
     if shooting_cooldown_timer > 0 then
         shooting_cooldown_timer = shooting_cooldown_timer - dt
+    end
+end
+
+local function handle_player_collision(dt)
+    for key, curPowerup in pairs(Powerups) do
+        local collided = collision.CheckCircleCollision(Player.x, Player.y, Player.radius, curPowerup.x, curPowerup.y,
+            curPowerup.radius)
+        if collided then
+            Player.upgrades["shotgun"] = true
+            Powerups[key] = nil
+        end
     end
 end
 
@@ -245,6 +305,7 @@ function love.update(dt)
     handle_projectiles(dt)
     handle_enemy_dmg_timers(dt)
     handle_enemies(dt)
+    handle_player_collision(dt)
 
     spawn_timer = spawn_timer + dt
     if spawn_timer >= 5 then

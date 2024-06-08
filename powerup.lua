@@ -6,6 +6,7 @@ function powerup.CreatePowerup(xPos, yPos)
         type = "shotgun",
         x = xPos,
         y = yPos,
+        radius = 32,
     }
 end
 
