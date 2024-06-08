@@ -15,6 +15,8 @@ local spawn_timer = 0
 local shooting_cooldown_timer = 0
 local enemy_dmg_timer = {}
 
+Sounds = {}
+
 function love.load()
     local width, height = love.graphics.getWidth(), love.graphics.getHeight()
     local player = {
@@ -30,6 +32,10 @@ function love.load()
 
     -- Load and play the soundtrack
     local soundtrack = love.audio.newSource("assets/main_soundtrack.wav", "stream")
+    Sounds["shoot"] = love.audio.newSource("assets/shoot.wav", "stream")
+    Sounds["player_damage"] = love.audio.newSource("assets/damage_2.wav", "stream")
+    Sounds["enemy_damage"] = love.audio.newSource("assets/enemy_damage.wav", "stream")
+
     soundtrack:setLooping(true)
     love.audio.play(soundtrack)
     love.audio.setVolume(0.25)
@@ -96,7 +102,10 @@ local function handle_projectiles(dt)
                 enemy.radius)
 
             if collided then
+                Sounds.enemy_damage:play()
+
                 enemy.hp = enemy.hp - Player.dmg
+
             end
         end
 
@@ -181,6 +190,8 @@ local function handle_enemies(dt)
             -- Damage the player
             Player.hp = Player.hp - enemy.dmg
             enemy_dmg_timer[enemy.id] = ENEMY_DMG_COOLDOWN
+            Sounds.player_damage:stop()
+            Sounds.player_damage:play()
         end
 
         ::continue::
@@ -213,6 +224,9 @@ function love.mousepressed(x, y, button, istouch, presses)
         table.insert(Projectiles, projectile.CreateProjectile(direction))
 
         shooting_cooldown_timer = SHOOTING_COOLDOWN
+
+        Sounds.shoot:stop()
+        Sounds.shoot:play()
     end
 end
 
