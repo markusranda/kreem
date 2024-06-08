@@ -2,7 +2,7 @@ local enemy = {}
 
 function enemy.CreateEnemy(posX, posY)
     return {
-        name = "ø",
+        sprite = love.graphics.newImage("finger.png"),
         x = posX,
         y = posY,
         direction = { x = 0, y = -1 },

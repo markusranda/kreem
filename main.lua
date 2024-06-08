@@ -18,7 +18,7 @@ function love.load()
     local player = {
         x = width / 2,
         y = height / 2,
-        name = "Heia",
+        sprite = love.graphics.newImage("hat.png"),
         direction = { x = 0, y = -1 } -- Initial direction (up)
     }
     Player = player
@@ -26,14 +26,20 @@ end
 
 function love.draw()
     -- Draw all entities
-    love.graphics.print(Player.name, Player.x, Player.y)
+
+    -- Draw player
+    local angle = math.atan2(Player.direction.y, Player.direction.x) - math.pi / 2
+    love.graphics.draw(Player.sprite, Player.x, Player.y, angle, 1, 1, Player.sprite:getWidth() / 2,
+        Player.sprite:getHeight() / 2)
 
     for key, projectile in pairs(Projectiles) do
         love.graphics.print(projectile.name, projectile.x, projectile.y)
     end
 
     for key, enemy in pairs(Enemies) do
-        love.graphics.print(enemy.name, enemy.x, enemy.y)
+        local angle = math.atan2(enemy.direction.y, enemy.direction.x) - math.pi / 2
+        love.graphics.draw(enemy.sprite, enemy.x, enemy.y, angle, 1, 1, enemy.sprite:getWidth() / 2,
+            enemy.sprite:getHeight() / 2)
     end
 end
 
