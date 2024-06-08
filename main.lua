@@ -19,7 +19,8 @@ function love.load()
         x = width / 2,
         y = height / 2,
         sprite = love.graphics.newImage("hat.png"),
-        direction = { x = 0, y = -1 } -- Initial direction (up)
+        direction = { x = 0, y = -1 },
+        dmg = 50,
     }
     Player = player
 end
@@ -37,7 +38,7 @@ function love.draw()
     end
 
     for key, enemy in pairs(Enemies) do
-        local angle = math.atan2(enemy.direction.y, enemy.direction.x) - math.pi / 2
+        local angle = math.atan2(enemy.direction.y, enemy.direction.x) + math.pi / 2
         love.graphics.draw(enemy.sprite, enemy.x, enemy.y, angle, 1, 1, enemy.sprite:getWidth() / 2,
             enemy.sprite:getHeight() / 2)
     end
@@ -87,23 +88,25 @@ end
 
 local function handle_projectiles(dt)
     for key, projectile in pairs(Projectiles) do
-        local enemy_to_remove = nil
+        local collided = false
         for key, enemy in pairs(Enemies) do
-            local collided = collision.CheckCircleCollision(projectile.x, projectile.y, projectile.radius, enemy.x,
+            collided = collision.CheckCircleCollision(projectile.x, projectile.y, projectile.radius, enemy.x,
                 enemy.y,
                 enemy.radius)
 
             if collided then
-                enemy_to_remove = key
+                print(string.format("Projectile: %s Enemy: %s", projectile.id, enemy.id))
+                enemy.hp = enemy.hp - Player.dmg
             end
-        end
-
-        if enemy_to_remove then
-            Enemies[enemy_to_remove] = nil
         end
 
         projectile.x = projectile.x + projectile.direction.x * projectile.speed * dt
         projectile.y = projectile.y + projectile.direction.y * projectile.speed * dt
+
+        -- Remove bullet if collision
+        if collided then
+            Projectiles[key] = nil
+        end
     end
 end
 
@@ -132,6 +135,11 @@ end
 
 local function handle_enemies(dt)
     for key, enemy in pairs(Enemies) do
+        if enemy.hp <= 0 then
+            Enemies[key] = nil
+            goto continue
+        end
+
         -- Calculate direction towards player
         local directionX = Player.x - enemy.x
         local directionY = Player.y - enemy.y
@@ -140,6 +148,7 @@ local function handle_enemies(dt)
         -- Update enemy position
         enemy.x = enemy.x + enemy.direction.x * enemy.speed * dt
         enemy.y = enemy.y + enemy.direction.y * enemy.speed * dt
+        ::continue::
     end
 end
 

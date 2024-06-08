@@ -1,4 +1,6 @@
 local projectile = {}
+local uuid = require("uuid")
+uuid.seed()
 
 function projectile.CreateProjectile()
     return {
@@ -7,7 +9,8 @@ function projectile.CreateProjectile()
         y = Player.y,
         direction = { x = Player.direction.x, y = Player.direction.y },
         speed = BULLET_SPEED,
-        radius = 10
+        radius = 10,
+        id = uuid.new()
     }
 end
 

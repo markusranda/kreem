@@ -1,4 +1,6 @@
 local enemy = {}
+local uuid = require("uuid")
+uuid.seed()
 
 function enemy.CreateEnemy(posX, posY)
     return {
@@ -7,7 +9,9 @@ function enemy.CreateEnemy(posX, posY)
         y = posY,
         direction = { x = 0, y = -1 },
         speed = ENEMY_SPEED,
-        radius = 25
+        radius = 25,
+        hp = 100,
+        id = uuid.new()
     }
 end
 
