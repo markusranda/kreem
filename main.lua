@@ -1,6 +1,7 @@
 local projectile = require("projectile")
 local enemy = require("enemy")
 local collision = require("collision")
+local powerup = require("powerup")
 
 SPEED = 200
 BULLET_SPEED = 600
@@ -11,6 +12,7 @@ ENEMY_DMG_COOLDOWN = 0.5
 Player = {}
 Enemies = {}
 Projectiles = {}
+Powerups = {}
 local spawn_timer = 0
 local shooting_cooldown_timer = 0
 local enemy_dmg_timer = {}
@@ -26,7 +28,8 @@ function love.load()
         direction = { x = 0, y = -1 },
         dmg = 50,
         radius = 16,
-        hp = 100
+        hp = 100,
+        upgrades = {}
     }
     Player = player
 
@@ -50,14 +53,24 @@ function love.draw()
     love.graphics.draw(Player.sprite, Player.x, Player.y, angle, 1, 1, Player.sprite:getWidth() / 2,
         Player.sprite:getHeight() / 2)
 
+    for key, bool in pairs(Player.upgrades) do
+        local width = love.graphics.getWidth()
+        love.graphics.print(key, width - 15 - love.graphics.getFont():getWidth(key), 15)
+    end
+
+
     for key, projectile in pairs(Projectiles) do
         love.graphics.print(projectile.name, projectile.x, projectile.y)
     end
 
-    for key, enemy in pairs(Enemies) do
-        local angle = math.atan2(enemy.direction.y, enemy.direction.x) + math.pi / 2
-        love.graphics.draw(enemy.sprite, enemy.x, enemy.y, angle, 1, 1, enemy.sprite:getWidth() / 2,
-            enemy.sprite:getHeight() / 2)
+    for key, curPowerup in pairs(Powerups) do
+        love.graphics.draw(curPowerup.sprite, curPowerup.x, curPowerup.y)
+    end
+
+    for key, curEnemy in pairs(Enemies) do
+        local angle = math.atan2(curEnemy.direction.y, curEnemy.direction.x) + math.pi / 2
+        love.graphics.draw(curEnemy.sprite, curEnemy.x, curEnemy.y, angle, 1, 1, curEnemy.sprite:getWidth() / 2,
+            curEnemy.sprite:getHeight() / 2)
     end
 
     -- Draw UI
@@ -161,43 +174,54 @@ local function normalizeVector(x, y)
     end
 end
 
-local function handle_enemies(dt)
-    for key, enemy in pairs(Enemies) do
-        if enemy.hp <= 0 then
-            -- Clean up enemy
-            enemy_dmg_timer[enemy.id] = nil
-            Enemies[key] = nil
-            goto continue
-        end
+local function remove_enemy(key, selectedEnemy)
+    enemy_dmg_timer[selectedEnemy.id] = nil
+    Enemies[key] = nil
 
-        -- Calculate direction towards player
-        local directionX = Player.x - enemy.x
-        local directionY = Player.y - enemy.y
-        enemy.direction.x, enemy.direction.y = normalizeVector(directionX, directionY)
+    local rand = math.random()
+    if rand <= 1 then
+        local powerupEntity = powerup.CreatePowerup(selectedEnemy.x, selectedEnemy.y)
+        table.insert(Powerups, powerupEntity)
+    end
+end
 
-        -- Update enemy position
-        local updateX = enemy.x + enemy.direction.x * enemy.speed * dt
-        local updateY = enemy.y + enemy.direction.y * enemy.speed * dt
+local function handle_enemy(key, selectedEnemy, dt)
+    if selectedEnemy.hp <= 0 then
+        remove_enemy(key, selectedEnemy)
+        return
+    end
 
-        -- Don't update if too close to player
-        local collided = collision.CheckCircleCollision(updateX, updateY, enemy.radius, Player.x, Player.y, Player
-            .radius)
+    -- Calculate direction towards player
+    local directionX = Player.x - selectedEnemy.x
+    local directionY = Player.y - selectedEnemy.y
+    selectedEnemy.direction.x, selectedEnemy.direction.y = normalizeVector(directionX, directionY)
 
-        if not collided then
-            -- Move
-            enemy.x = updateX
-            enemy.y = updateY
-        end
+    -- Update selectedEnemy position
+    local updateX = selectedEnemy.x + selectedEnemy.direction.x * selectedEnemy.speed * dt
+    local updateY = selectedEnemy.y + selectedEnemy.direction.y * selectedEnemy.speed * dt
 
-        if enemy_dmg_timer[enemy.id] <= 0 and collided then
-            -- Damage the player
-            Player.hp = Player.hp - enemy.dmg
-            enemy_dmg_timer[enemy.id] = ENEMY_DMG_COOLDOWN
+    -- Don't update if too close to player
+    local collided = collision.CheckCircleCollision(updateX, updateY, selectedEnemy.radius, Player.x, Player.y, Player
+        .radius)
+
+    if not collided then
+        -- Move
+        selectedEnemy.x = updateX
+        selectedEnemy.y = updateY
+    end
+
+    if enemy_dmg_timer[selectedEnemy.id] <= 0 and collided then
+        -- Damage the player
+        Player.hp = Player.hp - selectedEnemy.dmg
+        enemy_dmg_timer[selectedEnemy.id] = ENEMY_DMG_COOLDOWN
+    end
             Sounds.player_damage:stop()
             Sounds.player_damage:play()
-        end
+end
 
-        ::continue::
+local function handle_enemies(dt)
+    for key, enemy in pairs(Enemies) do
+        handle_enemy(key, enemy, dt)
     end
 end
 
@@ -209,24 +233,65 @@ local function handle_enemy_dmg_timers(dt)
     end
 end
 
+local function fire_single_shot(x, y)
+    -- Calculate the difference in coordinates
+    local dx = x - Player.x
+    local dy = y - Player.y
+    local length = math.sqrt(dx * dx + dy * dy)
+
+    -- Normalize the vector (make it unit length)
+    if length ~= 0 then
+        dx = dx / length
+        dy = dy / length
+    end
+
+    local direction = { x = dx, y = dy }
+    table.insert(Projectiles, projectile.CreateProjectile(direction))
+    shooting_cooldown_timer = SHOOTING_COOLDOWN
+end
+
+local function fire_shotgun_shot(x, y)
+    print("Firing shotgun")
+    -- Calculate the difference in coordinates
+    local dx = x - Player.x
+    local dy = y - Player.y
+    local length = math.sqrt(dx * dx + dy * dy)
+
+    -- Normalize the vector (make it unit length)
+    if length ~= 0 then
+        dx = dx / length
+        dy = dy / length
+    end
+
+    -- Create three directions with a slight angle offset
+    local angleOffset = math.rad(10) -- 10 degree offset
+    local baseAngle = math.atan2(dy, dx)
+    local directions = {
+        { x = math.cos(baseAngle - angleOffset), y = math.sin(baseAngle - angleOffset) },
+        { x = dx,                                y = dy }, -- original direction
+        { x = math.cos(baseAngle + angleOffset), y = math.sin(baseAngle + angleOffset) }
+    }
+
+    -- Create and insert three projectiles with the different directions
+    for _, dir in ipairs(directions) do
+        table.insert(Projectiles, projectile.CreateProjectile(dir))
+    end
+
+    shooting_cooldown_timer = SHOOTING_COOLDOWN
+end
+
 function love.mousepressed(x, y, button, istouch, presses)
     -- 1 represents the left mouse button
     if button == 1 and shooting_cooldown_timer <= 0 then
-        -- Calculate the difference in coordinates
-        local dx = x - Player.x
-        local dy = y - Player.y
-        local length = math.sqrt(dx * dx + dy * dy)
-
-        -- Normalize the vector (make it unit length)
-        if length ~= 0 then
-            dx = dx / length
-            dy = dy / length
+        for key, value in pairs(Player.upgrades) do
+            print(value)
         end
 
-        local direction = { x = dx, y = dy }
-        table.insert(Projectiles, projectile.CreateProjectile(direction))
-
-        shooting_cooldown_timer = SHOOTING_COOLDOWN
+        if Player.upgrades["shotgun"] ~= nil then
+            fire_shotgun_shot(x, y)
+        else
+            fire_single_shot(x, y)
+        end
 
         Sounds.shoot:stop()
         Sounds.shoot:play()
@@ -239,6 +304,17 @@ local function handle_shooting_timer(dt)
     end
 end
 
+local function handle_player_collision(dt)
+    for key, curPowerup in pairs(Powerups) do
+        local collided = collision.CheckCircleCollision(Player.x, Player.y, Player.radius, curPowerup.x, curPowerup.y,
+            curPowerup.radius)
+        if collided then
+            Player.upgrades["shotgun"] = true
+            Powerups[key] = nil
+        end
+    end
+end
+
 
 function love.update(dt)
     handle_movement(dt)
@@ -246,6 +322,7 @@ function love.update(dt)
     handle_projectiles(dt)
     handle_enemy_dmg_timers(dt)
     handle_enemies(dt)
+    handle_player_collision(dt)
 
     spawn_timer = spawn_timer + dt
     if spawn_timer >= 5 then
