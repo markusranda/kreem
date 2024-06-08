@@ -6,12 +6,14 @@ SPEED = 200
 BULLET_SPEED = 600
 ENEMY_SPEED = 150
 SHOOTING_COOLDOWN = 0.5
+ENEMY_DMG_COOLDOWN = 0.5
 
 Player = {}
 Enemies = {}
 Projectiles = {}
 local spawn_timer = 0
 local shooting_cooldown_timer = 0
+local enemy_dmg_timer = {}
 
 function love.load()
     local width, height = love.graphics.getWidth(), love.graphics.getHeight()
@@ -21,6 +23,8 @@ function love.load()
         sprite = love.graphics.newImage("hat.png"),
         direction = { x = 0, y = -1 },
         dmg = 50,
+        radius = 16,
+        hp = 100
     }
     Player = player
 end
@@ -42,6 +46,9 @@ function love.draw()
         love.graphics.draw(enemy.sprite, enemy.x, enemy.y, angle, 1, 1, enemy.sprite:getWidth() / 2,
             enemy.sprite:getHeight() / 2)
     end
+
+    -- Draw UI
+    love.graphics.print(string.format("HP: %s", Player.hp), 15, 15)
 end
 
 local function handle_movement(dt)
@@ -95,7 +102,6 @@ local function handle_projectiles(dt)
                 enemy.radius)
 
             if collided then
-                print(string.format("Projectile: %s Enemy: %s", projectile.id, enemy.id))
                 enemy.hp = enemy.hp - Player.dmg
             end
         end
@@ -121,7 +127,9 @@ local function spawn_enemy()
     end
 
     local posX, posY = getRandomPosition()
-    table.insert(Enemies, enemy.CreateEnemy(posX, posY))
+    local enemy = enemy.CreateEnemy(posX, posY)
+    enemy_dmg_timer[enemy.id] = 0
+    table.insert(Enemies, enemy)
 end
 
 local function normalizeVector(x, y)
@@ -136,6 +144,8 @@ end
 local function handle_enemies(dt)
     for key, enemy in pairs(Enemies) do
         if enemy.hp <= 0 then
+            -- Clean up enemy
+            enemy_dmg_timer[enemy.id] = nil
             Enemies[key] = nil
             goto continue
         end
@@ -146,9 +156,34 @@ local function handle_enemies(dt)
         enemy.direction.x, enemy.direction.y = normalizeVector(directionX, directionY)
 
         -- Update enemy position
-        enemy.x = enemy.x + enemy.direction.x * enemy.speed * dt
-        enemy.y = enemy.y + enemy.direction.y * enemy.speed * dt
+        local updateX = enemy.x + enemy.direction.x * enemy.speed * dt
+        local updateY = enemy.y + enemy.direction.y * enemy.speed * dt
+
+        -- Don't update if too close to player
+        local collided = collision.CheckCircleCollision(updateX, updateY, enemy.radius, Player.x, Player.y, Player
+            .radius)
+
+        if not collided then
+            -- Move
+            enemy.x = updateX
+            enemy.y = updateY
+        end
+
+        if enemy_dmg_timer[enemy.id] <= 0 and collided then
+            -- Damage the player
+            Player.hp = Player.hp - enemy.dmg
+            enemy_dmg_timer[enemy.id] = ENEMY_DMG_COOLDOWN
+        end
+
         ::continue::
+    end
+end
+
+local function handle_enemy_dmg_timers(dt)
+    for key, timer in pairs(enemy_dmg_timer) do
+        if timer > 0 then
+            enemy_dmg_timer[key] = timer - dt
+        end
     end
 end
 
@@ -156,6 +191,7 @@ function love.update(dt)
     handle_movement(dt)
     handle_shooting(dt)
     handle_projectiles(dt)
+    handle_enemy_dmg_timers(dt)
     handle_enemies(dt)
 
     spawn_timer = spawn_timer + dt

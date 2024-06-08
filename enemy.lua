@@ -11,7 +11,8 @@ function enemy.CreateEnemy(posX, posY)
         speed = ENEMY_SPEED,
         radius = 25,
         hp = 100,
-        id = uuid.new()
+        id = uuid.new(),
+        dmg = 10,
     }
 end
 
