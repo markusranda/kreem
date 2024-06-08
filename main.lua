@@ -35,6 +35,7 @@ function love.load()
     Sounds["shoot"] = love.audio.newSource("assets/shoot.wav", "stream")
     Sounds["player_damage"] = love.audio.newSource("assets/damage_2.wav", "stream")
     Sounds["enemy_damage"] = love.audio.newSource("assets/enemy_damage.wav", "stream")
+    Sounds["enemy_death"] = love.audio.newSource("assets/enemy_death.wav", "stream")
 
     soundtrack:setLooping(true)
     love.audio.play(soundtrack)
@@ -102,10 +103,12 @@ local function handle_projectiles(dt)
                 enemy.radius)
 
             if collided then
-                Sounds.enemy_damage:play()
 
                 enemy.hp = enemy.hp - Player.dmg
-
+                Sounds.enemy_damage:play()
+                if enemy.hp <= 0 then
+                    Sounds.enemy_death:play()
+                end
             end
         end
 
