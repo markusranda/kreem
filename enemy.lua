@@ -4,7 +4,7 @@ uuid.seed()
 
 function enemy.CreateEnemy(posX, posY)
     return {
-        sprite = love.graphics.newImage("finger.png"),
+        sprite = love.graphics.newImage("assets/finger.png"),
         x = posX,
         y = posY,
         direction = { x = 0, y = -1 },

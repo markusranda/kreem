@@ -20,7 +20,7 @@ function love.load()
     local player = {
         x = width / 2,
         y = height / 2,
-        sprite = love.graphics.newImage("hat.png"),
+        sprite = love.graphics.newImage("assets/hat.png"),
         direction = { x = 0, y = -1 },
         dmg = 50,
         radius = 16,
@@ -29,7 +29,7 @@ function love.load()
     Player = player
 
     -- Load and play the soundtrack
-    local soundtrack = love.audio.newSource("main_soundtrack.wav", "stream")
+    local soundtrack = love.audio.newSource("assets/main_soundtrack.wav", "stream")
     soundtrack:setLooping(true)
     love.audio.play(soundtrack)
     love.audio.setVolume(0.25)
