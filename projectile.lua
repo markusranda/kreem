@@ -2,12 +2,12 @@ local projectile = {}
 local uuid = require("uuid")
 uuid.seed()
 
-function projectile.CreateProjectile()
+function projectile.CreateProjectile(direction)
     return {
         name = "o",
         x = Player.x,
         y = Player.y,
-        direction = { x = Player.direction.x, y = Player.direction.y },
+        direction = { x = direction.x, y = direction.y },
         speed = BULLET_SPEED,
         radius = 10,
         id = uuid.new()

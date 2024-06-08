@@ -87,18 +87,6 @@ local function handle_movement(dt)
     Player.y = Player.y + moveY * SPEED * dt
 end
 
-local function handle_shooting(dt)
-    if shooting_cooldown_timer > 0 then
-        shooting_cooldown_timer = shooting_cooldown_timer - dt
-    end
-
-    if love.keyboard.isDown("space") and shooting_cooldown_timer <= 0 then
-        table.insert(Projectiles, projectile.CreateProjectile())
-
-        shooting_cooldown_timer = SHOOTING_COOLDOWN
-    end
-end
-
 local function handle_projectiles(dt)
     for key, projectile in pairs(Projectiles) do
         local collided = false
@@ -193,9 +181,37 @@ local function handle_enemy_dmg_timers(dt)
     end
 end
 
+function love.mousepressed(x, y, button, istouch, presses)
+    -- 1 represents the left mouse button
+    if button == 1 and shooting_cooldown_timer <= 0 then
+        -- Calculate the difference in coordinates
+        local dx = x - Player.x
+        local dy = y - Player.y
+        local length = math.sqrt(dx * dx + dy * dy)
+
+        -- Normalize the vector (make it unit length)
+        if length ~= 0 then
+            dx = dx / length
+            dy = dy / length
+        end
+
+        local direction = { x = dx, y = dy }
+        table.insert(Projectiles, projectile.CreateProjectile(direction))
+
+        shooting_cooldown_timer = SHOOTING_COOLDOWN
+    end
+end
+
+local function handle_shooting_timer(dt)
+    if shooting_cooldown_timer > 0 then
+        shooting_cooldown_timer = shooting_cooldown_timer - dt
+    end
+end
+
+
 function love.update(dt)
     handle_movement(dt)
-    handle_shooting(dt)
+    handle_shooting_timer(dt)
     handle_projectiles(dt)
     handle_enemy_dmg_timers(dt)
     handle_enemies(dt)
