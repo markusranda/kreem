@@ -27,6 +27,12 @@ function love.load()
         hp = 100
     }
     Player = player
+
+    -- Load and play the soundtrack
+    local soundtrack = love.audio.newSource("main_soundtrack.wav", "stream")
+    soundtrack:setLooping(true)
+    love.audio.play(soundtrack)
+    love.audio.setVolume(0.25)
 end
 
 function love.draw()
