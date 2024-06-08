@@ -39,6 +39,7 @@ function love.load()
     Sounds["player_damage"] = love.audio.newSource("assets/damage_2.wav", "stream")
     Sounds["enemy_damage"] = love.audio.newSource("assets/enemy_damage.wav", "stream")
     Sounds["enemy_death"] = love.audio.newSource("assets/enemy_death.wav", "stream")
+    Sounds["powerup"] = love.audio.newSource("assets/powerup.wav", "stream")
 
     soundtrack:setLooping(true)
     love.audio.play(soundtrack)
@@ -308,6 +309,7 @@ local function handle_player_collision(dt)
         local collided = collision.CheckCircleCollision(Player.x, Player.y, Player.radius, curPowerup.x, curPowerup.y,
             curPowerup.radius)
         if collided then
+            Sounds.powerup:play()
             Player.upgrades["shotgun"] = true
             Powerups[key] = nil
         end
