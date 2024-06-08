@@ -1,6 +1,7 @@
 local projectile = require("projectile")
 local enemy = require("enemy")
 local collision = require("collision")
+local powerup = require("powerup")
 
 SPEED = 200
 BULLET_SPEED = 600
@@ -11,6 +12,7 @@ ENEMY_DMG_COOLDOWN = 0.5
 Player = {}
 Enemies = {}
 Projectiles = {}
+Powerups = {}
 local spawn_timer = 0
 local shooting_cooldown_timer = 0
 local enemy_dmg_timer = {}
@@ -47,10 +49,14 @@ function love.draw()
         love.graphics.print(projectile.name, projectile.x, projectile.y)
     end
 
-    for key, enemy in pairs(Enemies) do
-        local angle = math.atan2(enemy.direction.y, enemy.direction.x) + math.pi / 2
-        love.graphics.draw(enemy.sprite, enemy.x, enemy.y, angle, 1, 1, enemy.sprite:getWidth() / 2,
-            enemy.sprite:getHeight() / 2)
+    for key, curPowerup in pairs(Powerups) do
+        love.graphics.draw(curPowerup.sprite, curPowerup.x, curPowerup.y)
+    end
+
+    for key, curEnemy in pairs(Enemies) do
+        local angle = math.atan2(curEnemy.direction.y, curEnemy.direction.x) + math.pi / 2
+        love.graphics.draw(curEnemy.sprite, curEnemy.x, curEnemy.y, angle, 1, 1, curEnemy.sprite:getWidth() / 2,
+            curEnemy.sprite:getHeight() / 2)
     end
 
     -- Draw UI
@@ -149,41 +155,52 @@ local function normalizeVector(x, y)
     end
 end
 
+local function remove_enemy(key, selectedEnemy)
+    enemy_dmg_timer[selectedEnemy.id] = nil
+    Enemies[key] = nil
+
+    local rand = math.random()
+    if rand <= 0.10 then
+        local powerupEntity = powerup.CreatePowerup(selectedEnemy.x, selectedEnemy.y)
+        table.insert(Powerups, powerupEntity)
+    end
+end
+
+local function handle_enemy(key, selectedEnemy, dt)
+    if selectedEnemy.hp <= 0 then
+        remove_enemy(key, selectedEnemy)
+        return
+    end
+
+    -- Calculate direction towards player
+    local directionX = Player.x - selectedEnemy.x
+    local directionY = Player.y - selectedEnemy.y
+    selectedEnemy.direction.x, selectedEnemy.direction.y = normalizeVector(directionX, directionY)
+
+    -- Update selectedEnemy position
+    local updateX = selectedEnemy.x + selectedEnemy.direction.x * selectedEnemy.speed * dt
+    local updateY = selectedEnemy.y + selectedEnemy.direction.y * selectedEnemy.speed * dt
+
+    -- Don't update if too close to player
+    local collided = collision.CheckCircleCollision(updateX, updateY, selectedEnemy.radius, Player.x, Player.y, Player
+        .radius)
+
+    if not collided then
+        -- Move
+        selectedEnemy.x = updateX
+        selectedEnemy.y = updateY
+    end
+
+    if enemy_dmg_timer[selectedEnemy.id] <= 0 and collided then
+        -- Damage the player
+        Player.hp = Player.hp - selectedEnemy.dmg
+        enemy_dmg_timer[selectedEnemy.id] = ENEMY_DMG_COOLDOWN
+    end
+end
+
 local function handle_enemies(dt)
     for key, enemy in pairs(Enemies) do
-        if enemy.hp <= 0 then
-            -- Clean up enemy
-            enemy_dmg_timer[enemy.id] = nil
-            Enemies[key] = nil
-            goto continue
-        end
-
-        -- Calculate direction towards player
-        local directionX = Player.x - enemy.x
-        local directionY = Player.y - enemy.y
-        enemy.direction.x, enemy.direction.y = normalizeVector(directionX, directionY)
-
-        -- Update enemy position
-        local updateX = enemy.x + enemy.direction.x * enemy.speed * dt
-        local updateY = enemy.y + enemy.direction.y * enemy.speed * dt
-
-        -- Don't update if too close to player
-        local collided = collision.CheckCircleCollision(updateX, updateY, enemy.radius, Player.x, Player.y, Player
-            .radius)
-
-        if not collided then
-            -- Move
-            enemy.x = updateX
-            enemy.y = updateY
-        end
-
-        if enemy_dmg_timer[enemy.id] <= 0 and collided then
-            -- Damage the player
-            Player.hp = Player.hp - enemy.dmg
-            enemy_dmg_timer[enemy.id] = ENEMY_DMG_COOLDOWN
-        end
-
-        ::continue::
+        handle_enemy(key, enemy, dt)
     end
 end
 
@@ -211,7 +228,6 @@ function love.mousepressed(x, y, button, istouch, presses)
 
         local direction = { x = dx, y = dy }
         table.insert(Projectiles, projectile.CreateProjectile(direction))
-
         shooting_cooldown_timer = SHOOTING_COOLDOWN
     end
 end
