@@ -116,7 +116,6 @@ local function handle_projectiles(dt)
                 enemy.radius)
 
             if collided then
-
                 enemy.hp = enemy.hp - Player.dmg
                 Sounds.enemy_damage:play()
                 if enemy.hp <= 0 then
@@ -214,9 +213,9 @@ local function handle_enemy(key, selectedEnemy, dt)
         -- Damage the player
         Player.hp = Player.hp - selectedEnemy.dmg
         enemy_dmg_timer[selectedEnemy.id] = ENEMY_DMG_COOLDOWN
+        Sounds.player_damage:stop()
+        Sounds.player_damage:play()
     end
-            Sounds.player_damage:stop()
-            Sounds.player_damage:play()
 end
 
 local function handle_enemies(dt)
