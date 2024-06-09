@@ -165,7 +165,7 @@ local function spawn_enemy()
         return x, y
     end
     local posX, posY = getRandomBorderPosition()
-    local enemy = enemy.CreateEnemy(posX, posY)
+    local enemy = enemy.CreateEnemyFinger(posX, posY)
     enemy_dmg_timer[enemy.id] = 0
     table.insert(Enemies, enemy)
 end

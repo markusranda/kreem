@@ -2,7 +2,7 @@ local enemy = {}
 local uuid = require("src.uuid")
 uuid.seed()
 
-function enemy.CreateEnemy(posX, posY)
+function enemy.CreateEnemyFinger(posX, posY)
     return {
         sprite = love.graphics.newImage("assets/finger.png"),
         x = posX,
