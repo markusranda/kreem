@@ -1,0 +1,35 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "room_1.tmx",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "room_1.tmx": {
+            "scale": 3,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 214.33333333333337,
+                "y": 132.66666666666663
+            }
+        },
+        "room_1.tmx#tileset": {
+            "scaleInDock": 1
+        }
+    },
+    "last.exportedFilePath": "C:/Users/Randa/projects/kreem/assets/maps",
+    "last.imagePath": "C:/Users/Randa/projects/kreem/assets",
+    "map.fixedSize": false,
+    "map.lastUsedExportFilter": "All Files (*)",
+    "map.lastUsedFormat": "tmx",
+    "openFiles": [
+        "room_1.tmx"
+    ],
+    "project": "room_1.tiled-project",
+    "recentFiles": [
+        "room_1.tmx"
+    ],
+    "tileset.embedInMap": true
+}
