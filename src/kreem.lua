@@ -258,7 +258,6 @@ local function fire_single_shot(x, y)
 end
 
 local function fire_shotgun_shot(x, y)
-    print("Firing shotgun")
     -- Calculate the difference in coordinates
     local dx = x - Player.x
     local dy = y - Player.y
@@ -290,10 +289,6 @@ end
 function kreem.mousepressed(x, y, button, istouch, presses)
     -- 1 represents the left mouse button
     if button == 1 and shooting_cooldown_timer <= 0 then
-        for key, value in pairs(Player.upgrades) do
-            print(value)
-        end
-
         if Player.upgrades["shotgun"] ~= nil then
             fire_shotgun_shot(x, y)
         else
