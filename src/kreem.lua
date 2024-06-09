@@ -52,8 +52,8 @@ end
 function kreem.draw()
     -- Translate the coordinate system by the negative camera position
     love.graphics.push()
-    love.graphics.translate(-Camera.x, -Camera.y)
     love.graphics.scale(Camera.zoom, Camera.zoom)
+    love.graphics.translate(-Camera.x, -Camera.y)
 
     -- Draw map
     Map:draw(-Camera.x, -Camera.y, Camera.zoom, Camera.zoom)
@@ -335,8 +335,8 @@ end
 
 local function handle_camera()
     -- Center on player
-    Camera.x = (Player.x * Camera.zoom) - (love.graphics.getWidth() / 2)
-    Camera.y = (Player.y * Camera.zoom) - (love.graphics.getHeight() / 2)
+    Camera.x = Player.x - (love.graphics.getWidth() / 2) / Camera.zoom
+    Camera.y = Player.y - (love.graphics.getHeight() / 2) / Camera.zoom
 end
 
 function kreem.update(dt)
