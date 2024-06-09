@@ -22,32 +22,93 @@ Enemies = {}
 Projectiles = {}
 Powerups = {}
 Map = {}
-AtlasImage = {}
+World = {}
 local spawn_timer = 0
 local shooting_cooldown_timer = 0
 local enemy_dmg_timer = {}
 
+local function beginContact(a, b, coll)
+    local userDataA = a:getUserData()
+    local userDataB = b:getUserData()
+
+    if userDataA and userDataB then
+        if (userDataA == "Player" and userDataB == "Teleport") or (userDataA == "Teleport" and userDataB == "Player") then
+            print("TELEPORT TIME!")
+        end
+    end
+end
+
+local function create_object_fixtures(layerName, objectName)
+    local objectLayer = Map.layers[layerName]
+
+    if objectLayer and objectLayer.objects then
+        for _, object in ipairs(objectLayer.objects) do
+            local body = love.physics.newBody(World, object.x + object.width / 2, object.y + object.height / 2, "static")
+            local shape = love.physics.newRectangleShape(object.width, object.height)
+            local fixture = love.physics.newFixture(body, shape)
+            if objectName then
+                fixture:setUserData(objectName)
+            else
+                fixture:setUserData(object.name)
+            end
+        end
+    else
+        print(layerName .. " layer or objects not found!")
+    end
+end
 
 function kreem.load()
-    -- Load map
-    Map = sti("assets/maps/room_1.lua")
+    -- Setup window
+    love.window.setMode(1280, 1024, { fullscreen = false, resizable = true })
 
+    -- Setup sounds
     kreem_audio.Init()
     kreem_audio.PlayMainSoundtrack()
 
+    -- Initialize physics world
+    World = love.physics.newWorld(0, 0, true)
+
+    -- Set world meter size (in pixels)
+    love.physics.setMeter(32)
+
+    -- Load map
+    Map = sti("assets/maps/room_1.lua", { "box2d" })
+
+    -- Create Box2D collision objects
+    Map:box2d_init(World)
+
+    -- Initialize player
     local mapWidth = Map.width * Map.tilewidth
     local mapHeight = Map.height * Map.tileheight
     Player = player.CreatePlayer(mapWidth / 2, mapHeight / 2)
+
+    -- Make player a physics object
+    Player.body = love.physics.newBody(World, Player.x, Player.y, "dynamic")
+    Player.shape = love.physics.newCircleShape(Player.radius)
+    Player.fixture = love.physics.newFixture(Player.body, Player.shape)
+    Player.fixture:setUserData("Player")
+
+    -- Create fixtures for objects in the Teleports layer
+    create_object_fixtures("Teleports", "Teleport")
+    create_object_fixtures("Walls")
+
+    -- Set collision callback
+    World:setCallbacks(beginContact, endContact, preSolve, postSolve)
 end
 
 function kreem.draw()
-    -- Translate the coordinate system by the negative camera position
     love.graphics.push()
     love.graphics.scale(Camera.zoom, Camera.zoom)
     love.graphics.translate(-Camera.x, -Camera.y)
 
     -- Draw map
+    love.graphics.setColor(1, 1, 1)
     Map:draw(-Camera.x, -Camera.y, Camera.zoom, Camera.zoom)
+
+    -- Draw Collision Map (useful for debugging)
+    love.graphics.setColor(1, 0, 0)
+    Map:box2d_draw()
+    love.graphics.setColor(1, 1, 1)
 
     -- Draw player
     local angle = math.atan2(Player.direction.y, Player.direction.x) - math.pi / 2
@@ -73,7 +134,6 @@ function kreem.draw()
             curEnemy.sprite:getHeight() / 2)
     end
 
-    -- Restore the previous coordinate system
     love.graphics.pop()
 
     -- Draw UI
@@ -111,8 +171,8 @@ local function handle_movement(dt)
         Player.direction = { x = moveX, y = moveY }
     end
 
-    Player.x = Player.x + moveX * Player.speed * dt
-    Player.y = Player.y + moveY * Player.speed * dt
+    -- Apply force to the physics body
+    Player.body:setLinearVelocity(moveX * Player.speed, moveY * Player.speed)
 end
 
 local function handle_projectiles(dt)
@@ -125,9 +185,9 @@ local function handle_projectiles(dt)
 
             if collided then
                 enemy.hp = enemy.hp - Player.dmg
-                Sounds.enemy_damage:play()
+                kreem_audio.sounds.enemy_damage:play()
                 if enemy.hp <= 0 then
-                    Sounds.enemy_death:play()
+                    kreem_audio.sounds.enemy_death:play()
                 end
             end
         end
@@ -221,8 +281,8 @@ local function handle_enemy(key, selectedEnemy, dt)
         -- Damage the player
         Player.hp = Player.hp - selectedEnemy.dmg
         enemy_dmg_timer[selectedEnemy.id] = ENEMY_DMG_COOLDOWN
-        Sounds.player_damage:stop()
-        Sounds.player_damage:play()
+        kreem_audio.sounds.player_damage:stop()
+        kreem_audio.sounds.player_damage:play()
     end
 end
 
@@ -304,8 +364,8 @@ function kreem.mousepressed(x, y, button, istouch, presses)
             fire_single_shot(wx, wy)
         end
 
-        Sounds.shoot:stop()
-        Sounds.shoot:play()
+        kreem_audio.sounds.shoot:stop()
+        kreem_audio.sounds.shoot:play()
     end
 end
 
@@ -334,6 +394,11 @@ end
 
 function kreem.update(dt)
     Map:update(dt)
+    World:update(dt)
+
+    -- Sync player position with physics
+    Player.x, Player.y = Player.body:getPosition()
+
     handle_movement(dt)
     handle_shooting_timer(dt)
     handle_projectiles(dt)

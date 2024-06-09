@@ -8,15 +8,16 @@
     ],
     "fileStates": {
         "room_1.tmx": {
-            "scale": 3,
+            "scale": 2,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 214.33333333333337,
-                "y": 132.66666666666663
+                "x": 234.5,
+                "y": 122
             }
         },
         "room_1.tmx#tileset": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         }
     },
     "last.exportedFilePath": "C:/Users/Randa/projects/kreem/assets/maps",
