@@ -4,9 +4,9 @@ uuid.seed()
 
 function projectile.CreateProjectile(direction)
     return {
-        name = "o",
-        x = Player.x,
-        y = Player.y,
+        sprite = love.graphics.newImage("assets/bullet.png"),
+        x = Player.x + Player.sprite:getWidth() / 2,
+        y = Player.y + Player.sprite:getHeight() / 2,
         direction = { x = direction.x, y = direction.y },
         speed = BULLET_SPEED,
         radius = 10,

@@ -56,12 +56,14 @@ function kreem.draw()
 
     -- Draw upgrades
     for key, curPowerup in pairs(Powerups) do
-        love.graphics.draw(curPowerup.sprite, curPowerup.x, curPowerup.y)
+        love.graphics.draw(curPowerup.sprite, curPowerup.x, curPowerup.y, 0, 1, 1, curPowerup.sprite:getWidth() / 2,
+            curPowerup.sprite:getHeight() / 2)
     end
 
     -- Draw projectiles
     for key, projectile in pairs(Projectiles) do
-        love.graphics.print(projectile.name, projectile.x, projectile.y)
+        love.graphics.draw(projectile.sprite, projectile.x, projectile.y, 0, 1, 1, projectile.sprite:getWidth() / 2,
+            projectile.sprite:getHeight() / 2)
     end
 
     -- Draw enemies
