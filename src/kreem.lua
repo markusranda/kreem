@@ -14,9 +14,9 @@ ENEMY_DMG_COOLDOWN = 0.5
 
 Camera = {
     x = 0,
-    y = 0
+    y = 0,
+    zoom = 2
 }
-Zoom = 2
 Player = {}
 Enemies = {}
 Projectiles = {}
@@ -53,10 +53,10 @@ function kreem.draw()
     -- Translate the coordinate system by the negative camera position
     love.graphics.push()
     love.graphics.translate(-Camera.x, -Camera.y)
-    love.graphics.scale(Zoom, Zoom)
+    love.graphics.scale(Camera.zoom, Camera.zoom)
 
     -- Draw map
-    Map:draw(-Camera.x, -Camera.y, Zoom, Zoom)
+    Map:draw(-Camera.x, -Camera.y, Camera.zoom, Camera.zoom)
 
     -- Draw player
     local angle = math.atan2(Player.direction.y, Player.direction.x) - math.pi / 2
@@ -293,13 +293,22 @@ local function fire_shotgun_shot(x, y)
     shooting_cooldown_timer = SHOOTING_COOLDOWN
 end
 
+local function windowToWorld(wx, wy)
+    -- Example conversion, adjust according to your camera/view setup
+    local worldX = (wx / Camera.zoom) + Camera.x
+    local worldY = (wy / Camera.zoom) + Camera.y
+
+    return worldX, worldY
+end
+
 function kreem.mousepressed(x, y, button, istouch, presses)
     -- 1 represents the left mouse button
     if button == 1 and shooting_cooldown_timer <= 0 then
+        local wx, wy = windowToWorld(x, y)
         if Player.upgrades["shotgun"] ~= nil then
-            fire_shotgun_shot(x, y)
+            fire_shotgun_shot(wx, wy)
         else
-            fire_single_shot(x, y)
+            fire_single_shot(wx, wy)
         end
 
         Sounds.shoot:stop()
@@ -326,8 +335,8 @@ end
 
 local function handle_camera()
     -- Center on player
-    Camera.x = (Player.x * Zoom) - (love.graphics.getWidth() / 2)
-    Camera.y = (Player.y * Zoom) - (love.graphics.getHeight() / 2)
+    Camera.x = (Player.x * Camera.zoom) - (love.graphics.getWidth() / 2)
+    Camera.y = (Player.y * Camera.zoom) - (love.graphics.getHeight() / 2)
 end
 
 function kreem.update(dt)
