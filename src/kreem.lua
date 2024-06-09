@@ -4,9 +4,9 @@ local collision = require("src.collision")
 local powerup = require("src.powerup")
 local sti = require("src.sti")
 local player = require("src.player")
+local kreem_audio = require("src.kreem_audio")
 local kreem = {}
 
-SPEED = 200
 BULLET_SPEED = 600
 ENEMY_SPEED = 150
 SHOOTING_COOLDOWN = 0.5
@@ -27,26 +27,17 @@ local spawn_timer = 0
 local shooting_cooldown_timer = 0
 local enemy_dmg_timer = {}
 
-Sounds = {}
 
 function kreem.load()
     -- Load map
     Map = sti("assets/maps/room_1.lua")
 
+    kreem_audio.Init()
+    kreem_audio.PlayMainSoundtrack()
+
     local mapWidth = Map.width * Map.tilewidth
     local mapHeight = Map.height * Map.tileheight
     Player = player.CreatePlayer(mapWidth / 2, mapHeight / 2)
-
-    -- Load and play the soundtrack
-    local soundtrack = love.audio.newSource("assets/main_soundtrack.wav", "stream")
-    Sounds["shoot"] = love.audio.newSource("assets/shoot.wav", "stream")
-    Sounds["player_damage"] = love.audio.newSource("assets/damage_2.wav", "stream")
-    Sounds["enemy_damage"] = love.audio.newSource("assets/enemy_damage.wav", "stream")
-    Sounds["enemy_death"] = love.audio.newSource("assets/enemy_death.wav", "stream")
-
-    soundtrack:setLooping(true)
-    love.audio.play(soundtrack)
-    love.audio.setVolume(0.25)
 end
 
 function kreem.draw()
@@ -118,8 +109,8 @@ local function handle_movement(dt)
         Player.direction = { x = moveX, y = moveY }
     end
 
-    Player.x = Player.x + moveX * SPEED * dt
-    Player.y = Player.y + moveY * SPEED * dt
+    Player.x = Player.x + moveX * Player.speed * dt
+    Player.y = Player.y + moveY * Player.speed * dt
 end
 
 local function handle_projectiles(dt)

@@ -9,6 +9,7 @@ function player.CreatePlayer(xPos, yPos)
         dmg = 50,
         radius = 16,
         hp = 100,
+        speed = 200,
         upgrades = {}
     }
 end
