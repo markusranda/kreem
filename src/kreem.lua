@@ -3,6 +3,7 @@ local enemy = require("src.enemy")
 local collision = require("src.collision")
 local powerup = require("src.powerup")
 local sti = require("src.sti")
+local player = require("src.player")
 local kreem = {}
 
 SPEED = 200
@@ -11,6 +12,11 @@ ENEMY_SPEED = 150
 SHOOTING_COOLDOWN = 0.5
 ENEMY_DMG_COOLDOWN = 0.5
 
+Camera = {
+    x = 0,
+    y = 0
+}
+Zoom = 2
 Player = {}
 Enemies = {}
 Projectiles = {}
@@ -24,18 +30,12 @@ local enemy_dmg_timer = {}
 Sounds = {}
 
 function kreem.load()
-    local width, height = love.graphics.getWidth(), love.graphics.getHeight()
-    local player = {
-        x = width / 2,
-        y = height / 2,
-        sprite = love.graphics.newImage("assets/hat.png"),
-        direction = { x = 0, y = -1 },
-        dmg = 50,
-        radius = 16,
-        hp = 100,
-        upgrades = {}
-    }
-    Player = player
+    -- Load map
+    Map = sti("assets/maps/room_1.lua")
+
+    local mapWidth = Map.width * Map.tilewidth
+    local mapHeight = Map.height * Map.tileheight
+    Player = player.CreatePlayer(mapWidth / 2, mapHeight / 2)
 
     -- Load and play the soundtrack
     local soundtrack = love.audio.newSource("assets/main_soundtrack.wav", "stream")
@@ -47,42 +47,49 @@ function kreem.load()
     soundtrack:setLooping(true)
     love.audio.play(soundtrack)
     love.audio.setVolume(0.25)
-
-    -- Load map
-    Map = sti("assets/maps/room_1.lua")
 end
 
 function kreem.draw()
+    -- Translate the coordinate system by the negative camera position
+    love.graphics.push()
+    love.graphics.translate(-Camera.x, -Camera.y)
+    love.graphics.scale(Zoom, Zoom)
+
     -- Draw map
-    Map:draw()
+    Map:draw(-Camera.x, -Camera.y, Zoom, Zoom)
 
     -- Draw player
     local angle = math.atan2(Player.direction.y, Player.direction.x) - math.pi / 2
     love.graphics.draw(Player.sprite, Player.x, Player.y, angle, 1, 1, Player.sprite:getWidth() / 2,
         Player.sprite:getHeight() / 2)
 
-    for key, bool in pairs(Player.upgrades) do
-        local width = love.graphics.getWidth()
-        love.graphics.print(key, width - 15 - love.graphics.getFont():getWidth(key), 15)
-    end
-
-
-    for key, projectile in pairs(Projectiles) do
-        love.graphics.print(projectile.name, projectile.x, projectile.y)
-    end
-
+    -- Draw upgrades
     for key, curPowerup in pairs(Powerups) do
         love.graphics.draw(curPowerup.sprite, curPowerup.x, curPowerup.y)
     end
 
+    -- Draw projectiles
+    for key, projectile in pairs(Projectiles) do
+        love.graphics.print(projectile.name, projectile.x, projectile.y)
+    end
+
+    -- Draw enemies
     for key, curEnemy in pairs(Enemies) do
         local angle = math.atan2(curEnemy.direction.y, curEnemy.direction.x) + math.pi / 2
         love.graphics.draw(curEnemy.sprite, curEnemy.x, curEnemy.y, angle, 1, 1, curEnemy.sprite:getWidth() / 2,
             curEnemy.sprite:getHeight() / 2)
     end
 
+    -- Restore the previous coordinate system
+    love.graphics.pop()
+
     -- Draw UI
     love.graphics.print(string.format("HP: %s", Player.hp), 15, 15)
+    love.graphics.print(string.format("Coords: [%s, %s]", Player.x, Player.y), 15, 25)
+    for key, bool in pairs(Player.upgrades) do
+        local width = love.graphics.getWidth()
+        love.graphics.print(key, width - 15 - love.graphics.getFont():getWidth(key), 15)
+    end
 end
 
 local function handle_movement(dt)
@@ -317,6 +324,11 @@ local function handle_player_collision(dt)
     end
 end
 
+local function handle_camera()
+    -- Center on player
+    Camera.x = (Player.x * Zoom) - (love.graphics.getWidth() / 2)
+    Camera.y = (Player.y * Zoom) - (love.graphics.getHeight() / 2)
+end
 
 function kreem.update(dt)
     Map:update(dt)
@@ -326,6 +338,7 @@ function kreem.update(dt)
     handle_enemy_dmg_timers(dt)
     handle_enemies(dt)
     handle_player_collision(dt)
+    handle_camera()
 
     spawn_timer = spawn_timer + dt
     if spawn_timer >= 5 then
