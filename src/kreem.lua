@@ -25,7 +25,7 @@ Map = {}
 World = {}
 local spawn_timer = 0
 local shooting_cooldown_timer = 0
-local enemy_dmg_timer = {}
+enemy_dmg_timer = {}
 
 local function beginContact(a, b, coll)
     local userDataA = a:getUserData()
@@ -227,18 +227,18 @@ local function spawn_enemy()
         return x, y
     end
     local posX, posY = getRandomBorderPosition()
-    local enemy = enemy.CreateEnemyFinger(posX, posY)
-    enemy_dmg_timer[enemy.id] = 0
-    table.insert(Enemies, enemy)
-end
+    -- spawnn random enemy
+    local random = love.math.random(1, 10)
 
-local function normalizeVector(x, y)
-    local length = math.sqrt(x * x + y * y)
-    if length > 0 then
-        return x / length, y / length
+    local createdEnemy = {}
+    if random < 2 then
+        createdEnemy = enemy.CreateEnemyFingerBoss(posX, posY)
     else
-        return 0, 0
+        createdEnemy = enemy.CreateEnemyFinger(posX, posY)
     end
+
+    enemy_dmg_timer[createdEnemy.id] = 0
+    table.insert(Enemies, createdEnemy)
 end
 
 local function remove_enemy(key, selectedEnemy)
@@ -258,32 +258,7 @@ local function handle_enemy(key, selectedEnemy, dt)
         return
     end
 
-    -- Calculate direction towards player
-    local directionX = Player.x - selectedEnemy.x
-    local directionY = Player.y - selectedEnemy.y
-    selectedEnemy.direction.x, selectedEnemy.direction.y = normalizeVector(directionX, directionY)
-
-    -- Update selectedEnemy position
-    local updateX = selectedEnemy.x + selectedEnemy.direction.x * selectedEnemy.speed * dt
-    local updateY = selectedEnemy.y + selectedEnemy.direction.y * selectedEnemy.speed * dt
-
-    -- Don't update if too close to player
-    local collided = collision.CheckCircleCollision(updateX, updateY, selectedEnemy.radius, Player.x, Player.y, Player
-        .radius)
-
-    if not collided then
-        -- Move
-        selectedEnemy.x = updateX
-        selectedEnemy.y = updateY
-    end
-
-    if enemy_dmg_timer[selectedEnemy.id] <= 0 and collided then
-        -- Damage the player
-        Player.hp = Player.hp - selectedEnemy.dmg
-        enemy_dmg_timer[selectedEnemy.id] = ENEMY_DMG_COOLDOWN
-        kreem_audio.sounds.player_damage:stop()
-        kreem_audio.sounds.player_damage:play()
-    end
+    selectedEnemy.update(selectedEnemy, dt)
 end
 
 local function handle_enemies(dt)
