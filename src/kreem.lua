@@ -85,6 +85,7 @@ function kreem.load()
     -- Make player a physics object
     Player.body = love.physics.newBody(World, Player.x, Player.y, "dynamic")
     Player.shape = love.physics.newCircleShape(Player.radius)
+
     Player.fixture = love.physics.newFixture(Player.body, Player.shape)
     Player.fixture:setUserData("Player")
 
@@ -111,9 +112,7 @@ function kreem.draw()
     love.graphics.setColor(1, 1, 1)
 
     -- Draw player
-    local angle = math.atan2(Player.direction.y, Player.direction.x) - math.pi / 2
-    love.graphics.draw(Player.sprite, Player.x, Player.y, angle, 1, 1, Player.sprite:getWidth() / 2,
-        Player.sprite:getHeight() / 2)
+    Player:draw()
 
     -- Draw upgrades
     for key, curPowerup in pairs(Powerups) do
@@ -169,7 +168,11 @@ local function handle_movement(dt)
 
     if moveX ~= 0 or moveY ~= 0 then
         Player.direction = { x = moveX, y = moveY }
+        Player.state = "run"
+    else
+        Player.state = "idle"
     end
+
 
     -- Apply force to the physics body
     Player.body:setLinearVelocity(moveX * Player.speed, moveY * Player.speed)
@@ -344,6 +347,11 @@ function kreem.mousepressed(x, y, button, istouch, presses)
     end
 end
 
+function kreem.mousemoved(x, y, dx, dy, istouch)
+    local wx, wy = windowToWorld(x, y)
+    Player.aimPos = { x = wx, y = wy }
+end
+
 local function handle_shooting_timer(dt)
     if shooting_cooldown_timer > 0 then
         shooting_cooldown_timer = shooting_cooldown_timer - dt
@@ -381,6 +389,8 @@ function kreem.update(dt)
     handle_enemies(dt)
     handle_player_collision(dt)
     handle_camera()
+
+    Player:update(dt)
 
     spawn_timer = spawn_timer + dt
     if spawn_timer >= 5 then
