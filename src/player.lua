@@ -1,21 +1,25 @@
 local player = {}
 local anim8 = require("src.anim8")
 
+PlayerSheet = {}
+IdleAnim = {}
+RunAnim = {}
+
 local function loadSprites()
     print("Loading player")
-    playerSheet = love.graphics.newImage('assets/player-sheet.png')
-    local g = anim8.newGrid(32, 32, playerSheet:getWidth(), playerSheet:getHeight())
+    PlayerSheet = love.graphics.newImage('assets/player-sheet.png')
+    local g = anim8.newGrid(32, 32, PlayerSheet:getWidth(), PlayerSheet:getHeight())
 
-    idleAnim = anim8.newAnimation(g('2-3', 1), 1)
-    runAnim = anim8.newAnimation(g('2-8', 2),  0.08)
-    armSprite = anim8.newAnimation(g('2-2', 3), 10)
+    IdleAnim = anim8.newAnimation(g('2-3', 1), 1)
+    RunAnim = anim8.newAnimation(g('2-8', 2), 0.08)
+    ArmSprite = anim8.newAnimation(g('2-2', 3), 10)
 end
 
 local function updatePlayer(self, dt)
     if self.state == "idle" then
-        idleAnim:update(dt)
+        IdleAnim:update(dt)
     elseif self.state == "run" then
-        runAnim:update(dt)
+        RunAnim:update(dt)
     end
 end
 
@@ -42,18 +46,17 @@ local function drawPlayer(self)
         love.graphics.setColor(1, 1, 1, 1)
     end
 
-    armSprite:draw(playerSheet, self.x, self.y, 0, scaleX, 1, backArmX, armY)
+    ArmSprite:draw(PlayerSheet, self.x, self.y, 0, scaleX, 1, backArmX, armY)
 
     if self.state == "idle" then
-        idleAnim:draw(playerSheet, self.x, self.y, 0, scaleX, 1, originX, originY)
+        IdleAnim:draw(PlayerSheet, self.x, self.y, 0, scaleX, 1, originX, originY)
     elseif self.state == "run" then
-        runAnim:draw(playerSheet, self.x, self.y, 0, scaleX, 1, originX, originY)
+        RunAnim:draw(PlayerSheet, self.x, self.y, 0, scaleX, 1, originX, originY)
     else
-        print("Invalid state> ", state)
+        print("Invalid state> ", self.state)
     end
 
-    armSprite:draw(playerSheet, self.x, self.y, 0, scaleX, 1, frontArmX, armY)
-
+    ArmSprite:draw(PlayerSheet, self.x, self.y, 0, scaleX, 1, frontArmX, armY)
 end
 
 
