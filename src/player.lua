@@ -7,7 +7,7 @@ local function loadSprites()
     local g = anim8.newGrid(32, 32, playerSheet:getWidth(), playerSheet:getHeight())
 
     idleAnim = anim8.newAnimation(g('2-3', 1), 1)
-    runAnim = anim8.newAnimation(g('2-3', 2), 0.2)
+    runAnim = anim8.newAnimation(g('2-8', 2),  0.08)
     armSprite = anim8.newAnimation(g('2-2', 3), 10)
 end
 
@@ -24,12 +24,12 @@ local function drawPlayer(self)
     local originX = 32 / 2
     local originY = 32 / 2 + (self.radius / 2)
 
-    local maxArmLength = 3
+    local maxArmLength = 5
     local aimOffsetX = (self.aimPos.x - self.x) * (maxArmLength / love.graphics.getWidth()) * self.direction.x
     local aimOffsetY = (self.aimPos.y - self.y) * (maxArmLength / love.graphics.getHeight())
-    local frontArmX = originX - 21 - aimOffsetX
+    local frontArmX = originX - 22 - aimOffsetX
     local backArmX = frontArmX - 3
-    local armY = originY - 20 - aimOffsetY
+    local armY = originY - 22 - aimOffsetY
 
     print(aimOffsetX)
 
