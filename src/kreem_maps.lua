@@ -1,5 +1,6 @@
 local sti = require("src.sti")
 local player = require("src.player")
+local debug_print = require("src.debug_print.print_table")
 
 local kreem_maps = {
     maps = {
@@ -113,7 +114,6 @@ local function init_map(map)
     create_object_fixtures(map, "Walls")
 
     CurrentMap = map
-    player.InitPlayer()
     World:setCallbacks(beginContact, endContact, preSolve, postSolve)
 end
 
@@ -125,6 +125,7 @@ function kreem_maps.load_first_map()
     kreem_maps.current_node = root_node
 
     init_map(map)
+    player.InitPlayer()
 end
 
 local function get_opposite_direction(incoming_direction)
@@ -150,6 +151,38 @@ local function get_random_map(direction)
     return map, map.properties.name
 end
 
+local function get_next_player_teleport_coords(box, target_dir)
+    local x, y = box.x, box.y
+    local margin = 10
+    local boxWidth, boxHeight = box.width, box.height
+    print(boxWidth, boxHeight)
+
+    -- Calculate the width and height of the player sprite
+    local playerHeight = Player.sprite:getHeight()
+    local playerWidth = Player.sprite:getWidth()
+
+    if target_dir == "north" then
+        return { x = x + (boxWidth / 2), y = y + playerHeight + margin }
+    elseif target_dir == "south" then
+        return { x = x + (boxWidth / 2), y = y - boxHeight }
+    elseif target_dir == "west" then
+        return { x = x + 16 + boxWidth, y = y + (boxHeight / 2) }
+    elseif target_dir == "east" then
+        return { x = x - 16, y = y + (boxHeight / 2) }
+    else
+        error("Invalid target_dir")
+    end
+end
+
+local function get_next_player_coords(structure, direction)
+    for _, object in ipairs(structure.layer.objects) do
+        if object.properties.direction == direction then
+            local targetCoords = get_next_player_teleport_coords(object, direction)
+            return targetCoords.x, targetCoords.y
+        end
+    end
+end
+
 function kreem_maps.load_next_map(incoming_direction)
     local direction = get_opposite_direction(incoming_direction)
     local current_node = kreem_maps.current_node
@@ -167,6 +200,14 @@ function kreem_maps.load_next_map(incoming_direction)
     kreem_maps.current_node = next_node
 
     init_map(next_node.map)
+    for key, object in pairs(CurrentMap.layers["Teleports"].objects) do
+        if object.properties.direction == direction then
+            local xPos, yPos = get_next_player_coords(object, direction)
+            print("Found coords", xPos, yPos)
+            player.InitPlayer(xPos, yPos)
+            break
+        end
+    end
 end
 
 return kreem_maps

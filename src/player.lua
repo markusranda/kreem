@@ -76,14 +76,21 @@ local function create_player(xPos, yPos)
     }
 end
 
-function player.InitPlayer()
+function player.InitPlayer(xPos, yPos)
     -- Initialize player
     local mapWidth = CurrentMap.width * CurrentMap.tilewidth
     local mapHeight = CurrentMap.height * CurrentMap.tileheight
     Player = create_player(mapWidth / 2, mapHeight / 2)
+    if not xPos then
+        xPos = Player.x
+    end
+
+    if not yPos then
+        yPos = Player.y
+    end
 
     -- Make player a physics object
-    Player.body = love.physics.newBody(World, Player.x, Player.y, "dynamic")
+    Player.body = love.physics.newBody(World, xPos, yPos, "dynamic")
     Player.shape = love.physics.newCircleShape(Player.radius)
 
     Player.fixture = love.physics.newFixture(Player.body, Player.shape)
