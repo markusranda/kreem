@@ -11,7 +11,9 @@ return {
   tileheight = 32,
   nextlayerid = 10,
   nextobjectid = 21,
-  properties = {},
+  properties = {
+    ["name"] = "room_3"
+  },
   tilesets = {
     {
       name = "tileset",
@@ -156,7 +158,9 @@ return {
           height = 32.125,
           rotation = 0,
           visible = true,
-          properties = {}
+          properties = {
+            ["direction"] = "east"
+          }
         }
       }
     },

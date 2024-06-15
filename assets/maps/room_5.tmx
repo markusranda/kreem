@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="11" height="9" tilewidth="32" tileheight="32" infinite="1" nextlayerid="10" nextobjectid="21">
  <editorsettings>
-  <export target="room_1.lua" format="lua"/>
+  <export target="room_5.lua" format="lua"/>
  </editorsettings>
+ <properties>
+  <property name="name" value="room_5"/>
+ </properties>
  <tileset firstgid="1" name="tileset" tilewidth="32" tileheight="32" tilecount="81" columns="9">
   <image source="../tileset.png" width="288" height="288"/>
  </tileset>
@@ -52,12 +55,16 @@
  </layer>
  <objectgroup id="5" name="Teleports" visible="0" locked="1" offsetx="-1.8125" offsety="0">
   <properties>
-   <property name="east" type="bool" value="true"/>
+   <property name="east" type="bool" value="false"/>
    <property name="north" type="bool" value="false"/>
    <property name="south" type="bool" value="false"/>
-   <property name="west" type="bool" value="false"/>
+   <property name="west" type="bool" value="true"/>
   </properties>
-  <object id="10" x="2.90909" y="255.839" width="18.87" height="31.9565"/>
+  <object id="10" x="2.90909" y="255.839" width="18.87" height="31.9565">
+   <properties>
+    <property name="direction" value="east"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup id="6" name="Walls" visible="0" locked="1">
   <object id="14" x="0" y="0" width="510.667" height="17"/>

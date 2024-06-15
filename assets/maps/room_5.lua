@@ -11,7 +11,9 @@ return {
   tileheight = 32,
   nextlayerid = 10,
   nextobjectid = 21,
-  properties = {},
+  properties = {
+    ["name"] = "room_5"
+  },
   tilesets = {
     {
       name = "tileset",
@@ -139,10 +141,10 @@ return {
       parallaxx = 1,
       parallaxy = 1,
       properties = {
-        ["east"] = true,
+        ["east"] = false,
         ["north"] = false,
         ["south"] = false,
-        ["west"] = false
+        ["west"] = true
       },
       objects = {
         {
@@ -156,7 +158,9 @@ return {
           height = 31.9565,
           rotation = 0,
           visible = true,
-          properties = {}
+          properties = {
+            ["direction"] = "east"
+          }
         }
       }
     },

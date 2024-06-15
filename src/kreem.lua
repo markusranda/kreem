@@ -1,68 +1,33 @@
-local projectile = require("src.projectile")
-local enemy = require("src.enemy")
-local collision = require("src.collision")
-local powerup = require("src.powerup")
-local sti = require("src.sti")
-local player = require("src.player")
-local kreem_audio = require("src.kreem_audio")
-local kreem = {}
+local projectile              = require("src.projectile")
+local enemy                   = require("src.enemy")
+local collision               = require("src.collision")
+local powerup                 = require("src.powerup")
+local player                  = require("src.player")
+local kreem_audio             = require("src.kreem_audio")
+local kreem_maps              = require("src.kreem_maps")
+local ui_hp                   = require("src.ui.ui_hp")
+local kreem                   = {}
 
-BULLET_SPEED = 600
-ENEMY_SPEED = 150
-SHOOTING_COOLDOWN = 0.5
-ENEMY_DMG_COOLDOWN = 0.5
+BULLET_SPEED                  = 600
+ENEMY_SPEED                   = 150
+SHOOTING_COOLDOWN             = 0.5
+ENEMY_DMG_COOLDOWN            = 0.5
 
-Camera = {
+Camera                        = {
     x = 0,
     y = 0,
     zoom = 2
 }
-Player = {}
-Enemies = {}
-Projectiles = {}
-Powerups = {}
-Map = {}
-World = {}
-local spawn_timer = 0
+Player                        = {}
+Enemies                       = {}
+Projectiles                   = {}
+Powerups                      = {}
+CurrentMap                    = {}
+World                         = {}
+local spawn_timer             = 0
 local shooting_cooldown_timer = 0
-enemy_dmg_timer = {}
-local maps = {
-    room_1 = "assets/maps/room_1.lua",
-    room_2 = "assets/maps/room_2.lua",
-    room_3 = "assets/maps/room_3.lua",
-    room_4 = "assets/maps/room_4.lua",
-    room_5 = "assets/maps/room_5.lua",
-}
+enemy_dmg_timer               = {}
 
-local function beginContact(a, b, coll)
-    local userDataA = a:getUserData()
-    local userDataB = b:getUserData()
-
-    if userDataA and userDataB then
-        if (userDataA == "Player" and userDataB == "Teleport") or (userDataA == "Teleport" and userDataB == "Player") then
-            print("TELEPORT TIME!")
-        end
-    end
-end
-
-local function create_object_fixtures(layerName, objectName)
-    local objectLayer = Map.layers[layerName]
-
-    if objectLayer and objectLayer.objects then
-        for _, object in ipairs(objectLayer.objects) do
-            local body = love.physics.newBody(World, object.x + object.width / 2, object.y + object.height / 2, "static")
-            local shape = love.physics.newRectangleShape(object.width, object.height)
-            local fixture = love.physics.newFixture(body, shape)
-            if objectName then
-                fixture:setUserData(objectName)
-            else
-                fixture:setUserData(object.name)
-            end
-        end
-    else
-        print(layerName .. " layer or objects not found!")
-    end
-end
 
 function kreem.load()
     -- Setup window
@@ -79,29 +44,7 @@ function kreem.load()
     love.physics.setMeter(32)
 
     -- Load map
-    Map = sti(maps["room_1"], { "box2d" })
-
-    -- Create Box2D collision objects
-    Map:box2d_init(World)
-
-    -- Initialize player
-    local mapWidth = Map.width * Map.tilewidth
-    local mapHeight = Map.height * Map.tileheight
-    Player = player.CreatePlayer(mapWidth / 2, mapHeight / 2)
-
-    -- Make player a physics object
-    Player.body = love.physics.newBody(World, Player.x, Player.y, "dynamic")
-    Player.shape = love.physics.newCircleShape(Player.radius)
-
-    Player.fixture = love.physics.newFixture(Player.body, Player.shape)
-    Player.fixture:setUserData("Player")
-
-    -- Create fixtures for objects in the Teleports layer
-    create_object_fixtures("Teleports", "Teleport")
-    create_object_fixtures("Walls")
-
-    -- Set collision callback
-    World:setCallbacks(beginContact, endContact, preSolve, postSolve)
+    kreem_maps.load_first_map()
 end
 
 function kreem.draw()
@@ -111,11 +54,11 @@ function kreem.draw()
 
     -- Draw map
     love.graphics.setColor(1, 1, 1)
-    Map:draw(-Camera.x, -Camera.y, Camera.zoom, Camera.zoom)
+    CurrentMap:draw(-Camera.x, -Camera.y, Camera.zoom, Camera.zoom)
 
-    -- Draw Collision Map (useful for debugging)
+    -- Draw Collision CurrentMap (useful for debugging)
     love.graphics.setColor(1, 0, 0)
-    Map:box2d_draw()
+    CurrentMap:box2d_draw()
     love.graphics.setColor(1, 1, 1)
 
     -- Draw player
@@ -143,8 +86,7 @@ function kreem.draw()
     love.graphics.pop()
 
     -- Draw UI
-    love.graphics.print(string.format("HP: %s", Player.hp), 15, 15)
-    love.graphics.print(string.format("Coords: [%s, %s]", Player.x, Player.y), 15, 25)
+    ui_hp.draw_hp(Player)
     for key, bool in pairs(Player.upgrades) do
         local width = love.graphics.getWidth()
         love.graphics.print(key, width - 15 - love.graphics.getFont():getWidth(key), 15)
@@ -383,7 +325,7 @@ local function handle_camera()
 end
 
 function kreem.update(dt)
-    Map:update(dt)
+    CurrentMap:update(dt)
     World:update(dt)
 
     -- Sync player position with physics

@@ -57,7 +57,7 @@ local function drawPlayer(self)
 end
 
 
-function player.CreatePlayer(xPos, yPos)
+local function create_player(xPos, yPos)
     loadSprites()
     return {
         x = xPos,
@@ -74,6 +74,20 @@ function player.CreatePlayer(xPos, yPos)
         draw = drawPlayer,
         state = "idle"
     }
+end
+
+function player.InitPlayer()
+    -- Initialize player
+    local mapWidth = CurrentMap.width * CurrentMap.tilewidth
+    local mapHeight = CurrentMap.height * CurrentMap.tileheight
+    Player = create_player(mapWidth / 2, mapHeight / 2)
+
+    -- Make player a physics object
+    Player.body = love.physics.newBody(World, Player.x, Player.y, "dynamic")
+    Player.shape = love.physics.newCircleShape(Player.radius)
+
+    Player.fixture = love.physics.newFixture(Player.body, Player.shape)
+    Player.fixture:setUserData({ name = "Player" })
 end
 
 return player

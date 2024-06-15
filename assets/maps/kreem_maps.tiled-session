@@ -5,14 +5,18 @@
     },
     "activeFile": "room_1.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "fileStates": {
         "room_1.tmx": {
-            "scale": 1,
+            "expandedObjectLayers": [
+                5
+            ],
+            "scale": 2,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 10.5,
-                "y": 367
+                "x": 245.25,
+                "y": 228.5
             }
         },
         "room_1.tmx#tileset": {
@@ -20,11 +24,14 @@
             "scaleInEditor": 1
         },
         "room_2.tmx": {
+            "expandedObjectLayers": [
+                5
+            ],
             "scale": 2,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 228.75,
-                "y": 272.5
+                "x": 266.25,
+                "y": 219
             }
         },
         "room_2.tmx#tileset": {
@@ -37,19 +44,22 @@
             "scale": 2,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 274.25,
-                "y": 267.5
+                "x": 494.25,
+                "y": 265.5
             }
         },
         "room_3.tmx#tileset": {
             "scaleInDock": 1
         },
         "room_4.tmx": {
+            "expandedObjectLayers": [
+                5
+            ],
             "scale": 2,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 270.75,
-                "y": 243.5
+                "x": 265.75,
+                "y": 369
             }
         },
         "room_4.tmx#tileset": {
@@ -59,8 +69,8 @@
             "scale": 2,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 236.25,
-                "y": 269
+                "x": 220.75,
+                "y": 262.5
             }
         },
         "room_5.tmx#tileset": {
@@ -73,16 +83,20 @@
     "map.lastUsedExportFilter": "All Files (*)",
     "map.lastUsedFormat": "tmx",
     "openFiles": [
-        "room_1.tmx"
-    ],
-    "project": "room_1.tiled-project",
-    "property.type": "bool",
-    "recentFiles": [
-        "room_5.tmx",
+        "room_1.tmx",
+        "room_2.tmx",
+        "room_3.tmx",
         "room_4.tmx",
+        "room_5.tmx"
+    ],
+    "project": "kreem_maps.tiled-project",
+    "property.type": "string",
+    "recentFiles": [
         "room_3.tmx",
         "room_2.tmx",
-        "room_1.tmx"
+        "room_1.tmx",
+        "room_5.tmx",
+        "room_4.tmx"
     ],
     "tileset.embedInMap": true
 }

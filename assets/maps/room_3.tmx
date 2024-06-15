@@ -3,6 +3,9 @@
  <editorsettings>
   <export target="room_1.lua" format="lua"/>
  </editorsettings>
+ <properties>
+  <property name="name" value="room_3"/>
+ </properties>
  <tileset firstgid="1" name="tileset" tilewidth="32" tileheight="32" tilecount="81" columns="9">
   <image source="../tileset.png" width="288" height="288"/>
  </tileset>
@@ -57,7 +60,11 @@
    <property name="south" type="bool" value="false"/>
    <property name="west" type="bool" value="false"/>
   </properties>
-  <object id="12" x="494.307" y="256.061" width="18.13" height="32.125"/>
+  <object id="12" x="494.307" y="256.061" width="18.13" height="32.125">
+   <properties>
+    <property name="direction" value="east"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup id="6" name="Walls" visible="0" locked="1">
   <object id="14" x="0" y="0" width="510.667" height="17"/>
