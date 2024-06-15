@@ -123,6 +123,13 @@ local function handle_movement(dt)
         moveX = moveX + 1
     end
 
+    local joysticks = love.joystick.getJoysticks()
+    if #joysticks > 0 and moveX == 0 and moveY == 0 then
+        local joystick = joysticks[1]
+        moveX = moveX + joystick:getGamepadAxis("leftx")
+        moveY = moveY + joystick:getGamepadAxis("lefty")
+    end
+
     -- Normalize diagonal movement
     if moveX ~= 0 and moveY ~= 0 then
         moveX = moveX * math.sqrt(0.5)
@@ -242,18 +249,22 @@ local function windowToWorld(wx, wy)
     return worldX, worldY
 end
 
+local function initiate_shoot(x, y)
+    if Player.upgrades["shotgun"] ~= nil then
+        fire_shotgun_shot(x, y)
+    else
+        fire_single_shot(x, y)
+    end
+
+    kreem_audio.sounds.shoot:stop()
+    kreem_audio.sounds.shoot:play()
+end
+
 function kreem.mousepressed(x, y, button, istouch, presses)
     -- 1 represents the left mouse button
     if button == 1 and shooting_cooldown_timer <= 0 then
         local wx, wy = windowToWorld(x, y)
-        if Player.upgrades[upgrade_consts.UPGRADE_SHOTGUN] ~= nil then
-            fire_shotgun_shot(wx, wy)
-        else
-            fire_single_shot(wx, wy)
-        end
-
-        kreem_audio.sounds.shoot:stop()
-        kreem_audio.sounds.shoot:play()
+        initiate_shoot(wx, wy);
     end
 end
 
@@ -265,6 +276,27 @@ end
 local function handle_shooting_timer(dt)
     if shooting_cooldown_timer > 0 then
         shooting_cooldown_timer = shooting_cooldown_timer - dt
+    end
+end
+
+local function handle_shooting_joystick(dt)
+    if shooting_cooldown_timer <= 0 then
+        local joysticks = love.joystick.getJoysticks()
+        if #joysticks > 0 then
+            local joystick = joysticks[1]
+            local x = joystick:getGamepadAxis("rightx")
+            local y = joystick:getGamepadAxis("righty")
+
+            if math.abs(x) < 0.1 and math.abs(y) < 0.1 then
+                x = 0
+                y = 0
+            else
+                local px, py = Player.body:getPosition()
+                Player.aimPos = { x = px + x, y = py + y }
+                local wx, wy = Player.aimPos.x, Player.aimPos.y
+                initiate_shoot(wx, wy);
+            end
+        end
     end
 end
 
@@ -281,6 +313,7 @@ function kreem.update(dt)
 
     handle_movement(dt)
     handle_shooting_timer(dt)
+    handle_shooting_joystick(dt)
     handle_enemies(dt)
     handle_camera()
 
