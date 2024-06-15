@@ -318,9 +318,18 @@ function kreem.update(dt)
     end
 end
 
-collision.CollisionEmitter:on(consts.COLLISION_BULLET_WALL, function(bulletData, wallData)
-    bulletData.body:destroy()
-    Projectiles[bulletData.id] = nil
+collision.CollisionEmitter:on(consts.COLLISION_BULLET_WALL, function(bullet_data, wallData)
+    bullet_data.body:destroy()
+    Projectiles[bullet_data.id] = nil
 end)
+
+collision.CollisionEmitter:on(consts.COLLISION_BULLET_ENEMY, function(bullet_data, enemy_data)
+    Enemies[enemy_data.id].hp = Enemies[enemy_data.id].hp - Projectiles[bullet_data.id].dmg
+
+    -- Cleanup projectile
+    bullet_data.body:destroy()
+    Projectiles[bullet_data.id] = nil
+end)
+
 
 return kreem

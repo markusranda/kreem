@@ -1,4 +1,5 @@
 local uuid = require("src.uuid")
+local consts = require("src.collision.consts")
 local enemy_finger = {}
 enemy_finger.__index = enemy_finger
 
@@ -51,12 +52,14 @@ function enemy_finger.create(posX, posY)
     self.body = love.physics.newBody(World, posX, posY, "dynamic")
     self.shape = love.physics.newCircleShape(self.radius)
     self.fixture = love.physics.newFixture(self.body, self.shape)
-    self.fixture:setUserData({ name = "Bullet", body = self.body, id = self.id })
+    self.fixture:setUserData({ name = "Enemy", body = self.body, id = self.id })
     self.sprite = love.graphics.newImage("assets/finger.png")
     self.direction = { x = 0, y = -1 }
     self.speed = 150
     self.hp = 100
     self.dmg = 10
+    self.fixture:setCategory(consts.COLLISION_CATEGORY_ENEMY)
+    self.fixture:setMask(consts.COLLISION_CATEGORY_WALL)
 
     print("Spawned finger", self.id)
 

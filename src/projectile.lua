@@ -10,6 +10,7 @@ function projectile.CreateProjectile(direction)
     pro.speed = 600
     pro.radius = 3
     pro.id = uuid.new()
+    pro.dmg = 50
 
     local x, y = Player.body:getPosition()
     pro.body = love.physics.newBody(World, x, y, "dynamic")

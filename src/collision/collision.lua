@@ -1,6 +1,6 @@
-local EventEmitter = require('src.event_emitter') -- Adjust the path as necessary
-local consts       = require('src.collision.consts')
-local collision    = {
+local EventEmitter      = require('src.event_emitter') -- Adjust the path as necessary
+local consts            = require('src.collision.consts')
+local collision         = {
     CollisionEmitter = EventEmitter:new()
 }
 
@@ -11,6 +11,10 @@ local collisionHandlers = {
     ["BulletWall"] = function(userDataA, userDataB)
         collision.CollisionEmitter:emit(consts.COLLISION_BULLET_WALL, userDataA, userDataB)
     end,
+    ["BulletEnemy"] = function(bulletData, enemyData)
+        print("HALLLO")
+        collision.CollisionEmitter:emit(consts.COLLISION_BULLET_ENEMY, bulletData, enemyData)
+    end
 }
 
 function collision.BeginContact(a, b, coll)
