@@ -26,6 +26,13 @@ World = {}
 local spawn_timer = 0
 local shooting_cooldown_timer = 0
 enemy_dmg_timer = {}
+local maps = {
+    room_1 = "assets/maps/room_1.lua",
+    room_2 = "assets/maps/room_2.lua",
+    room_3 = "assets/maps/room_3.lua",
+    room_4 = "assets/maps/room_4.lua",
+    room_5 = "assets/maps/room_5.lua",
+}
 
 local function beginContact(a, b, coll)
     local userDataA = a:getUserData()
@@ -72,7 +79,7 @@ function kreem.load()
     love.physics.setMeter(32)
 
     -- Load map
-    Map = sti("assets/maps/room_1.lua", { "box2d" })
+    Map = sti(maps["room_1"], { "box2d" })
 
     -- Create Box2D collision objects
     Map:box2d_init(World)

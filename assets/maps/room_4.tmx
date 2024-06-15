@@ -39,28 +39,25 @@
 13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,
 13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,
 13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,
-16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,
 13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,
 13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,
 13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,
 13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,
 13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,
 13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,
-22,23,23,23,23,23,23,23,26,23,23,23,23,23,23,24
+13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,
+22,23,23,23,23,23,23,23,23,23,23,23,23,23,23,24
 </chunk>
   </data>
  </layer>
- <objectgroup id="5" name="Teleports" visible="0" locked="1" offsetx="-1.8125" offsety="0">
+ <objectgroup id="5" name="Teleports" visible="0" offsetx="-1.8125" offsety="0">
   <properties>
-   <property name="east" type="bool" value="true"/>
+   <property name="east" type="bool" value="false"/>
    <property name="north" type="bool" value="true"/>
-   <property name="south" type="bool" value="true"/>
-   <property name="west" type="bool" value="true"/>
+   <property name="south" type="bool" value="false"/>
+   <property name="west" type="bool" value="false"/>
   </properties>
   <object id="9" x="255.727" y="0.94" width="32" height="19.06"/>
-  <object id="10" x="2.90909" y="255.839" width="18.87" height="31.9565"/>
-  <object id="11" x="256.042" y="492.785" width="32.0909" height="18.09"/>
-  <object id="12" x="494.307" y="256.061" width="18.13" height="32.125"/>
  </objectgroup>
  <objectgroup id="6" name="Walls" visible="0" locked="1">
   <object id="14" x="0" y="0" width="510.667" height="17"/>

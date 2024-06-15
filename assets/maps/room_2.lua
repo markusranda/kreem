@@ -106,7 +106,7 @@ return {
         {
           x = 0, y = 0, width = 16, height = 16,
           data = {
-            4, 5, 5, 5, 5, 5, 5, 5, 8, 5, 5, 5, 5, 5, 5, 6,
+            4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6,
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
@@ -114,7 +114,7 @@ return {
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
-            16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18,
+            13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
@@ -139,38 +139,12 @@ return {
       parallaxx = 1,
       parallaxy = 1,
       properties = {
-        ["east"] = true,
-        ["north"] = true,
+        ["east"] = false,
+        ["north"] = false,
         ["south"] = true,
-        ["west"] = true
+        ["west"] = false
       },
       objects = {
-        {
-          id = 9,
-          name = "",
-          type = "",
-          shape = "rectangle",
-          x = 255.727,
-          y = 0.94,
-          width = 32,
-          height = 19.06,
-          rotation = 0,
-          visible = true,
-          properties = {}
-        },
-        {
-          id = 10,
-          name = "",
-          type = "",
-          shape = "rectangle",
-          x = 2.90909,
-          y = 255.839,
-          width = 18.87,
-          height = 31.9565,
-          rotation = 0,
-          visible = true,
-          properties = {}
-        },
         {
           id = 11,
           name = "",
@@ -180,19 +154,6 @@ return {
           y = 492.785,
           width = 32.0909,
           height = 18.09,
-          rotation = 0,
-          visible = true,
-          properties = {}
-        },
-        {
-          id = 12,
-          name = "",
-          type = "",
-          shape = "rectangle",
-          x = 494.307,
-          y = 256.061,
-          width = 18.13,
-          height = 32.125,
           rotation = 0,
           visible = true,
           properties = {}
