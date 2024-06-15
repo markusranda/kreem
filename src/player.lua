@@ -46,7 +46,7 @@ local function drawPlayer(self)
         error("Invalid state> ", self.state)
     end
 
-    ArmSprite:draw(PlayerSheet, self.x, self.y, 0, scaleX, 1, frontArmX, armY)
+    ArmSprite:draw(PlayerSheet, x, y, 0, scaleX, 1, frontArmX, armY)
 end
 
 
