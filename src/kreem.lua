@@ -250,7 +250,7 @@ local function windowToWorld(wx, wy)
 end
 
 local function initiate_shoot(x, y)
-    if Player.upgrades["shotgun"] ~= nil then
+    if Player.upgrades[upgrade_consts.UPGRADE_SHOTGUN] ~= nil then
         fire_shotgun_shot(x, y)
     else
         fire_single_shot(x, y)

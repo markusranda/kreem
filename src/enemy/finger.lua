@@ -68,7 +68,7 @@ function enemy_finger.create(posX, posY)
     self.fixture = love.physics.newFixture(self.body, self.shape)
     self.fixture:setUserData({ name = "Enemy", body = self.body, id = self.id })
     self.fixture:setCategory(consts.COLLISION_CATEGORY_ENEMY)
-    self.fixture:setMask(consts.COLLISION_CATEGORY_WALL)
+    self.fixture:setMask(consts.COLLISION_CATEGORY_WALL, consts.COLLISION_CATEGORY_TELEPORT)
     self.sprite = love.graphics.newImage("assets/finger.png")
     self.direction = { x = 0, y = -1 }
     self.speed = 150
