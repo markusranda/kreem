@@ -1,9 +1,10 @@
 local uuid = require("src.uuid")
 local consts = require("src.collision.consts")
+local kreem_audio = require("src.kreem_audio")
 local enemy_finger = {}
 enemy_finger.__index = enemy_finger
 
-function enemy_finger:update()
+function enemy_finger:update(dt)
     -- Calculate direction towards player
     if not self.body:isDestroyed() then
         local x, y = self.body:getPosition()
@@ -23,18 +24,23 @@ function enemy_finger:update()
         local yVel = dy * self.speed
         self.body:setLinearVelocity(xVel, yVel)
         self.direction = { x = dx, y = dy }
+
+        -- Update damage_timer
+        if self.attack_timer > 0 then
+            self.attack_timer = self.attack_timer - dt
+        end
     else
         self:destroy()
     end
+end
 
-    -- MOVE SOMEWHERE ELSE
-    -- if enemy_dmg_timer[selectedEnemy.id] <= 0 then
-    --     -- Damage the player
-    --     Player.hp = Player.hp - selectedEnemy.dmg
-    --     enemy_dmg_timer[selectedEnemy.id] = ENEMY_DMG_COOLDOWN
-    --     kreem_audio.sounds.player_damage:stop()
-    --     kreem_audio.sounds.player_damage:play()
-    -- end
+function enemy_finger:attack_player()
+    if self.attack_timer <= 0 then
+        Player.hp = Player.hp - self.dmg
+        self.attack_timer = self.attack_cooldown
+        kreem_audio.sounds.player_damage:stop()
+        kreem_audio.sounds.player_damage:play()
+    end
 end
 
 function enemy_finger:destroy()
@@ -57,6 +63,8 @@ function enemy_finger.create(posX, posY)
     self.speed = 150
     self.hp = 100
     self.dmg = 10
+    self.attack_timer = 0
+    self.attack_cooldown = 0.5
     self.fixture:setCategory(consts.COLLISION_CATEGORY_ENEMY)
     self.fixture:setMask(consts.COLLISION_CATEGORY_WALL)
 

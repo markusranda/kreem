@@ -9,7 +9,6 @@ local consts                  = require("src.collision.consts")
 local kreem                   = {}
 
 SHOOTING_COOLDOWN             = 0.5
-ENEMY_DMG_COOLDOWN            = 0.5
 
 Camera                        = {
     x = 0,
@@ -24,7 +23,6 @@ CurrentMap                    = {}
 World                         = {}
 local spawn_timer             = 0
 local shooting_cooldown_timer = 0
-enemy_dmg_timer               = {}
 
 
 function kreem.load()
@@ -168,26 +166,17 @@ local function spawn_enemy()
     local posX, posY = getRandomBorderPosition()
     local createdEnemy = enemy_finger.create(posX, posY)
 
-    enemy_dmg_timer[createdEnemy.id] = 0
     Enemies[createdEnemy.id] = createdEnemy
 end
 
-local function handle_enemies()
+local function handle_enemies(dt)
     for key, selectedEnemy in pairs(Enemies) do
         if selectedEnemy.hp <= 0 then
             selectedEnemy:destroy()
             return
         end
 
-        selectedEnemy:update()
-    end
-end
-
-local function handle_enemy_dmg_timers(dt)
-    for key, timer in pairs(enemy_dmg_timer) do
-        if timer > 0 then
-            enemy_dmg_timer[key] = timer - dt
-        end
+        selectedEnemy:update(dt)
     end
 end
 
@@ -299,8 +288,7 @@ function kreem.update(dt)
 
     handle_movement(dt)
     handle_shooting_timer(dt)
-    handle_enemy_dmg_timers(dt)
-    handle_enemies()
+    handle_enemies(dt)
     handle_camera()
 
     Player:update(dt)
@@ -323,6 +311,10 @@ collision.CollisionEmitter:on(consts.COLLISION_BULLET_ENEMY, function(bullet_dat
     -- Cleanup projectile
     bullet_data.body:destroy()
     Projectiles[bullet_data.id] = nil
+end)
+
+collision.CollisionEmitter:on(consts.COLLISION_ENEMY_PLAYER, function(enemy_data, player_data)
+    Enemies[enemy_data.id]:attack_player()
 end)
 
 

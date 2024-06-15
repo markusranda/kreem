@@ -5,14 +5,17 @@ local collision         = {
 }
 
 local collisionHandlers = {
-    ["PlayerTeleport"] = function(userDataA, userDataB)
-        collision.CollisionEmitter:emit(consts.COLLISION_PLAYER_TELEPORT, userDataA, userDataB)
+    ["PlayerTeleport"] = function(player_data, teleport_data)
+        collision.CollisionEmitter:emit(consts.COLLISION_PLAYER_TELEPORT, player_data, teleport_data)
     end,
-    ["BulletWall"] = function(userDataA, userDataB)
-        collision.CollisionEmitter:emit(consts.COLLISION_BULLET_WALL, userDataA, userDataB)
+    ["BulletWall"] = function(player_data, teleport_data)
+        collision.CollisionEmitter:emit(consts.COLLISION_BULLET_WALL, player_data, teleport_data)
     end,
     ["BulletEnemy"] = function(bulletData, enemyData)
         collision.CollisionEmitter:emit(consts.COLLISION_BULLET_ENEMY, bulletData, enemyData)
+    end,
+    ["EnemyPlayer"] = function(enemy_data, player_data)
+        collision.CollisionEmitter:emit(consts.COLLISION_ENEMY_PLAYER, enemy_data, player_data)
     end
 }
 
