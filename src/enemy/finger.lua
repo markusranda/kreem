@@ -42,12 +42,11 @@ function enemy_finger:destroy()
     if not self.body:isDestroyed() then
         self.body:destroy()
     end
-    print("Destroyed finger", self.id)
 end
 
 function enemy_finger.create(posX, posY)
     local self = setmetatable({}, enemy_finger)
-    self.radius = 25
+    self.radius = 16
     self.id = uuid.new()
     self.body = love.physics.newBody(World, posX, posY, "dynamic")
     self.shape = love.physics.newCircleShape(self.radius)
@@ -60,8 +59,6 @@ function enemy_finger.create(posX, posY)
     self.dmg = 10
     self.fixture:setCategory(consts.COLLISION_CATEGORY_ENEMY)
     self.fixture:setMask(consts.COLLISION_CATEGORY_WALL)
-
-    print("Spawned finger", self.id)
 
     return self
 end

@@ -303,12 +303,6 @@ function kreem.update(dt)
     handle_player_collision(dt)
     handle_camera()
 
-    -- Print the position of all projectiles
-    -- for _, projectile in pairs(Projectiles) do
-    --     local x, y = projectile.body:getPosition()
-    --     print("Bullet position:", x, y)
-    -- end
-
     Player:update(dt)
 
     spawn_timer = spawn_timer + dt

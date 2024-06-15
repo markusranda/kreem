@@ -12,7 +12,6 @@ local collisionHandlers = {
         collision.CollisionEmitter:emit(consts.COLLISION_BULLET_WALL, userDataA, userDataB)
     end,
     ["BulletEnemy"] = function(bulletData, enemyData)
-        print("HALLLO")
         collision.CollisionEmitter:emit(consts.COLLISION_BULLET_ENEMY, bulletData, enemyData)
     end
 }

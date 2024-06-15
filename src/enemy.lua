@@ -105,8 +105,6 @@ function enemy.CreateEnemyFingerBoss(posX, posY)
     boss.fixture = love.physics.newFixture(boss.body, boss.shape)
     boss.fixture:setUserData({ name = "Bullet", body = boss.body, id = boss.id })
 
-    print("Spawned boss", boss.id)
-
     return boss
 end
 
