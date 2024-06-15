@@ -124,6 +124,7 @@ end
 local function init_map(map)
     if CurrentMap then
         -- Clear current Box2D world
+        print("Destroying world, making space for a new.")
         World:destroy()
         World = love.physics.newWorld(0, 0)
     end

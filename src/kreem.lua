@@ -1,5 +1,5 @@
 local projectile              = require("src.projectile")
-local enemy                   = require("src.enemy")
+local enemy_finger            = require("src.enemy.finger")
 local collision               = require("src.collision.collision")
 local powerup                 = require("src.powerup")
 local kreem_audio             = require("src.kreem_audio")
@@ -8,7 +8,6 @@ local ui_hp                   = require("src.ui.ui_hp")
 local consts                  = require("src.collision.consts")
 local kreem                   = {}
 
-ENEMY_SPEED                   = 150
 SHOOTING_COOLDOWN             = 0.5
 ENEMY_DMG_COOLDOWN            = 0.5
 
@@ -79,8 +78,11 @@ function kreem.draw()
     -- Draw enemies
     for key, curEnemy in pairs(Enemies) do
         local angle = math.atan2(curEnemy.direction.y, curEnemy.direction.x) + math.pi / 2
-        love.graphics.draw(curEnemy.sprite, curEnemy.x, curEnemy.y, angle, 1, 1, curEnemy.sprite:getWidth() / 2,
-            curEnemy.sprite:getHeight() / 2)
+        if not curEnemy.body:isDestroyed() then
+            local x, y = curEnemy.body:getPosition()
+            love.graphics.draw(curEnemy.sprite, x, y, angle, 1, 1, curEnemy.sprite:getWidth() / 2,
+                curEnemy.sprite:getHeight() / 2)
+        end
     end
 
     -- Draw physics shapes for debugging
@@ -139,7 +141,7 @@ local function handle_movement(dt)
 end
 
 local function spawn_enemy()
-    local width, height = love.graphics.getWidth(), love.graphics.getHeight()
+    local width, height = CurrentMap.width * CurrentMap.tilewidth, CurrentMap.height * CurrentMap.tileheight
 
     -- Generate a random position within the window
     local function getRandomBorderPosition()
@@ -162,44 +164,22 @@ local function spawn_enemy()
 
         return x, y
     end
-    local posX, posY = getRandomBorderPosition()
-    -- spawnn random enemy
-    local random = love.math.random(1, 10)
 
-    local createdEnemy = {}
-    if random < 2 then
-        createdEnemy = enemy.CreateEnemyFingerBoss(posX, posY)
-    else
-        createdEnemy = enemy.CreateEnemyFinger(posX, posY)
-    end
+    local posX, posY = getRandomBorderPosition()
+    local createdEnemy = enemy_finger.create(posX, posY)
 
     enemy_dmg_timer[createdEnemy.id] = 0
-    table.insert(Enemies, createdEnemy)
+    Enemies[createdEnemy.id] = createdEnemy
 end
 
-local function remove_enemy(key, selectedEnemy)
-    enemy_dmg_timer[selectedEnemy.id] = nil
-    Enemies[key] = nil
+local function handle_enemies()
+    for key, selectedEnemy in pairs(Enemies) do
+        if selectedEnemy.hp <= 0 then
+            selectedEnemy:destroy()
+            return
+        end
 
-    local rand = math.random()
-    if rand <= 1 then
-        local powerupEntity = powerup.CreatePowerup(selectedEnemy.x, selectedEnemy.y)
-        table.insert(Powerups, powerupEntity)
-    end
-end
-
-local function handle_enemy(key, selectedEnemy, dt)
-    if selectedEnemy.hp <= 0 then
-        remove_enemy(key, selectedEnemy)
-        return
-    end
-
-    selectedEnemy.update(selectedEnemy, dt)
-end
-
-local function handle_enemies(dt)
-    for key, enemy in pairs(Enemies) do
-        handle_enemy(key, enemy, dt)
+        selectedEnemy:update()
     end
 end
 
@@ -313,13 +293,13 @@ function kreem.update(dt)
     CurrentMap:update(dt)
     World:update(dt)
 
-    -- Sync player position with physics
+    -- TODO Remove
     Player.x, Player.y = Player.body:getPosition()
 
     handle_movement(dt)
     handle_shooting_timer(dt)
     handle_enemy_dmg_timers(dt)
-    handle_enemies(dt)
+    handle_enemies()
     handle_player_collision(dt)
     handle_camera()
 
