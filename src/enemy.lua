@@ -1,8 +1,8 @@
 local enemy = {}
 local uuid = require("src.uuid")
-uuid.seed()
 local collision = require("src.collision")
 local kreem_audio = require("src.kreem_audio")
+uuid.seed()
 
 
 local function normalizeVector(x, y)
