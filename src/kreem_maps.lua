@@ -35,10 +35,10 @@ local kreem_maps = {
                     end
                 end
             else
-                error("The 'Teleports' layer has no properties.")
+                print("The 'Teleports' layer has no properties.")
             end
         else
-            error("Layer 'Teleports' not found.")
+            print("Layer 'Teleports' not found.")
         end
     end
 end)()
@@ -82,7 +82,7 @@ local function create_object_fixtures(map, layer_name, objectName)
             fixture:setUserData(userData)
         end
     else
-        error(layer_name .. " layer or objects not found!")
+        print(layer_name .. " layer or objects not found!")
     end
 end
 
