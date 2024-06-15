@@ -15,8 +15,8 @@
             "scale": 2,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 245.25,
-                "y": 228.5
+                "x": 253.25,
+                "y": 263.5
             }
         },
         "room_1.tmx#tileset": {
@@ -30,8 +30,8 @@
             "scale": 2,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 266.25,
-                "y": 219
+                "x": 258.25,
+                "y": 281
             }
         },
         "room_2.tmx#tileset": {
@@ -44,8 +44,8 @@
             "scale": 2,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 494.25,
-                "y": 265.5
+                "x": 283.75,
+                "y": 270.5
             }
         },
         "room_3.tmx#tileset": {
@@ -56,21 +56,24 @@
                 5
             ],
             "scale": 2,
-            "selectedLayer": 2,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 265.75,
-                "y": 369
+                "x": 269.75,
+                "y": 10
             }
         },
         "room_4.tmx#tileset": {
             "scaleInDock": 1
         },
         "room_5.tmx": {
+            "expandedObjectLayers": [
+                5
+            ],
             "scale": 2,
-            "selectedLayer": 2,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 220.75,
-                "y": 262.5
+                "x": 10.25,
+                "y": 271.5
             }
         },
         "room_5.tmx#tileset": {
@@ -93,10 +96,10 @@
     "property.type": "string",
     "recentFiles": [
         "room_3.tmx",
-        "room_2.tmx",
-        "room_1.tmx",
         "room_5.tmx",
-        "room_4.tmx"
+        "room_4.tmx",
+        "room_2.tmx",
+        "room_1.tmx"
     ],
     "tileset.embedInMap": true
 }

@@ -50,7 +50,7 @@ local function drawPlayer(self)
     elseif self.state == "run" then
         RunAnim:draw(PlayerSheet, self.x, self.y, 0, scaleX, 1, originX, originY)
     else
-        print("Invalid state> ", self.state)
+        error("Invalid state> ", self.state)
     end
 
     ArmSprite:draw(PlayerSheet, self.x, self.y, 0, scaleX, 1, frontArmX, armY)

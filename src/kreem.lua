@@ -83,6 +83,16 @@ function kreem.draw()
             curEnemy.sprite:getHeight() / 2)
     end
 
+    -- Draw physics shapes for debugging
+    -- for _, body in pairs(World:getBodies()) do
+    --     for _, fixture in pairs(body:getFixtures()) do
+    --         local shape = fixture:getShape()
+    --         if shape:typeOf("PolygonShape") then
+    --             love.graphics.polygon("line", body:getWorldPoints(shape:getPoints()))
+    --         end
+    --     end
+    -- end
+
     love.graphics.pop()
 
     -- Draw UI

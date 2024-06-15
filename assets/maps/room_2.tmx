@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="11" height="9" tilewidth="32" tileheight="32" infinite="1" nextlayerid="10" nextobjectid="21">
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="11" height="9" tilewidth="32" tileheight="32" infinite="1" nextlayerid="11" nextobjectid="21">
  <editorsettings>
-  <export target="room_1.lua" format="lua"/>
+  <export target="room_2.lua" format="lua"/>
  </editorsettings>
  <properties>
   <property name="name" value="room_2"/>
@@ -31,7 +31,7 @@
 </chunk>
   </data>
  </layer>
- <layer id="9" name="Walls" width="11" height="9" locked="1">
+ <layer id="9" name="Walls" width="11" height="9">
   <data encoding="csv">
    <chunk x="0" y="0" width="16" height="16">
 4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,6,
@@ -49,7 +49,29 @@
 13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,
 13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,
 13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,
-22,23,23,23,23,23,23,23,26,23,23,23,23,23,23,24
+22,23,23,23,23,23,23,23,0,23,23,23,23,23,23,24
+</chunk>
+  </data>
+ </layer>
+ <layer id="10" name="TeleportTiles" width="11" height="9" locked="1">
+  <data encoding="csv">
+   <chunk x="0" y="0" width="16" height="16">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,26,0,0,0,0,0,0,0
 </chunk>
   </data>
  </layer>
@@ -65,11 +87,5 @@
     <property name="direction" value="south"/>
    </properties>
   </object>
- </objectgroup>
- <objectgroup id="6" name="Walls" visible="0" locked="1">
-  <object id="14" x="0" y="0" width="510.667" height="17"/>
-  <object id="16" x="494.333" y="0.666667" width="17" height="510"/>
-  <object id="18" x="-0.666667" y="495" width="512.667" height="16.913"/>
-  <object id="19" x="0" y="0" width="17" height="510.667"/>
  </objectgroup>
 </map>

@@ -9,7 +9,7 @@ return {
   height = 9,
   tilewidth = 32,
   tileheight = 32,
-  nextlayerid = 10,
+  nextlayerid = 11,
   nextobjectid = 21,
   properties = {
     ["name"] = "room_3"
@@ -116,7 +116,7 @@ return {
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
-            13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18,
+            13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
@@ -124,6 +124,47 @@ return {
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
             13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
             22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24
+          }
+        }
+      }
+    },
+    {
+      type = "tilelayer",
+      x = 0,
+      y = 0,
+      width = 11,
+      height = 9,
+      id = 10,
+      name = "TeleportTiles",
+      class = "",
+      visible = true,
+      opacity = 1,
+      offsetx = 0,
+      offsety = 0,
+      parallaxx = 1,
+      parallaxy = 1,
+      properties = {},
+      encoding = "lua",
+      chunks = {
+        {
+          x = 0, y = 0, width = 16, height = 16,
+          data = {
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
           }
         }
       }
@@ -161,74 +202,6 @@ return {
           properties = {
             ["direction"] = "east"
           }
-        }
-      }
-    },
-    {
-      type = "objectgroup",
-      draworder = "topdown",
-      id = 6,
-      name = "Walls",
-      class = "",
-      visible = false,
-      opacity = 1,
-      offsetx = 0,
-      offsety = 0,
-      parallaxx = 1,
-      parallaxy = 1,
-      properties = {},
-      objects = {
-        {
-          id = 14,
-          name = "",
-          type = "",
-          shape = "rectangle",
-          x = 0,
-          y = 0,
-          width = 510.667,
-          height = 17,
-          rotation = 0,
-          visible = true,
-          properties = {}
-        },
-        {
-          id = 16,
-          name = "",
-          type = "",
-          shape = "rectangle",
-          x = 494.333,
-          y = 0.666667,
-          width = 17,
-          height = 510,
-          rotation = 0,
-          visible = true,
-          properties = {}
-        },
-        {
-          id = 18,
-          name = "",
-          type = "",
-          shape = "rectangle",
-          x = -0.666667,
-          y = 495,
-          width = 512.667,
-          height = 16.913,
-          rotation = 0,
-          visible = true,
-          properties = {}
-        },
-        {
-          id = 19,
-          name = "",
-          type = "",
-          shape = "rectangle",
-          x = 0,
-          y = 0,
-          width = 17,
-          height = 510.667,
-          rotation = 0,
-          visible = true,
-          properties = {}
         }
       }
     }

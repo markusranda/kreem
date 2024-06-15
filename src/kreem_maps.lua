@@ -35,10 +35,10 @@ local kreem_maps = {
                     end
                 end
             else
-                print("The 'Teleports' layer has no properties.")
+                error("The 'Teleports' layer has no properties.")
             end
         else
-            print("Layer 'Teleports' not found.")
+            error("Layer 'Teleports' not found.")
         end
     end
 end)()
@@ -62,8 +62,8 @@ function MapNode:getNeighbor(direction)
     return self.neighbors[direction]
 end
 
-local function create_object_fixtures(map, layerName, objectName)
-    local objectLayer = map.layers[layerName]
+local function create_object_fixtures(map, layer_name, objectName)
+    local objectLayer = map.layers[layer_name]
 
     if objectLayer and objectLayer.objects then
         for _, object in ipairs(objectLayer.objects) do
@@ -82,7 +82,34 @@ local function create_object_fixtures(map, layerName, objectName)
             fixture:setUserData(userData)
         end
     else
-        print(layerName .. " layer or objects not found!")
+        error(layer_name .. " layer or objects not found!")
+    end
+end
+
+local function create_tile_fixtures(map, layer_name)
+    local collisionLayer = map.layers[layer_name]
+    if collisionLayer and collisionLayer.chunks then
+        for _, chunk in ipairs(collisionLayer.chunks) do
+            local chunkX = chunk.x * map.tilewidth * chunk.width
+            local chunkY = chunk.y * map.tileheight * chunk.height
+            for tileY = 1, chunk.height do
+                local row = chunk.data[tileY]
+                if row then
+                    for tileX = 1, chunk.width do
+                        local tile = row[tileX]
+                        if tile and tile.gid and tile.gid > 0 then
+                            local worldX = chunkX + (tileX - 1) * map.tilewidth
+                            local worldY = chunkY + (tileY - 1) * map.tileheight
+
+                            local body = love.physics.newBody(World, worldX + map.tilewidth / 2,
+                                worldY + map.tileheight / 2, "static")
+                            local shape = love.physics.newRectangleShape(0, 0, map.tilewidth, map.tileheight)
+                            love.physics.newFixture(body, shape)
+                        end
+                    end
+                end
+            end
+        end
     end
 end
 
@@ -111,7 +138,7 @@ local function init_map(map)
 
     -- Create fixtures for objects in the Teleports layer
     create_object_fixtures(map, "Teleports", "Teleport")
-    create_object_fixtures(map, "Walls")
+    create_tile_fixtures(map, "Walls")
 
     CurrentMap = map
     World:setCallbacks(beginContact, endContact, preSolve, postSolve)
@@ -155,11 +182,9 @@ local function get_next_player_teleport_coords(box, target_dir)
     local x, y = box.x, box.y
     local margin = 10
     local boxWidth, boxHeight = box.width, box.height
-    print(boxWidth, boxHeight)
 
     -- Calculate the width and height of the player sprite
     local playerHeight = Player.sprite:getHeight()
-    local playerWidth = Player.sprite:getWidth()
 
     if target_dir == "north" then
         return { x = x + (boxWidth / 2), y = y + playerHeight + margin }
@@ -200,13 +225,17 @@ function kreem_maps.load_next_map(incoming_direction)
     kreem_maps.current_node = next_node
 
     init_map(next_node.map)
+    local found = false
     for key, object in pairs(CurrentMap.layers["Teleports"].objects) do
         if object.properties.direction == direction then
             local xPos, yPos = get_next_player_coords(object, direction)
-            print("Found coords", xPos, yPos)
             player.InitPlayer(xPos, yPos)
+            found = true
             break
         end
+    end
+    if not found then
+        error("Player did not get initialized, no teleport was found in next room")
     end
 end
 
