@@ -1,15 +1,14 @@
 local projectile              = require("src.projectile")
 local enemy_finger            = require("src.enemy.finger")
 local collision               = require("src.collision.collision")
-local powerup                 = require("src.powerup")
 local kreem_audio             = require("src.kreem_audio")
 local kreem_maps              = require("src.kreem_maps")
 local ui_hp                   = require("src.ui.ui_hp")
 local consts                  = require("src.collision.consts")
+local upgrade_consts          = require("src.upgrade.upgrade_consts")
 local kreem                   = {}
 
 SHOOTING_COOLDOWN             = 0.5
-
 Camera                        = {
     x = 0,
     y = 0,
@@ -18,7 +17,7 @@ Camera                        = {
 Player                        = {}
 Enemies                       = {}
 Projectiles                   = {}
-Powerups                      = {}
+Upgrades                      = {}
 CurrentMap                    = {}
 World                         = {}
 local spawn_timer             = 0
@@ -61,16 +60,21 @@ function kreem.draw()
     Player:draw()
 
     -- Draw upgrades
-    for key, curPowerup in pairs(Powerups) do
-        love.graphics.draw(curPowerup.sprite, curPowerup.x, curPowerup.y, 0, 1, 1, curPowerup.sprite:getWidth() / 2,
-            curPowerup.sprite:getHeight() / 2)
+    for key, curPowerup in pairs(Upgrades) do
+        if not curPowerup.body:isDestroyed() then
+            local x, y = curPowerup.body:getPosition()
+            love.graphics.draw(curPowerup.sprite, x, y, 0, 1, 1, curPowerup.sprite:getWidth() / 2,
+                curPowerup.sprite:getHeight() / 2)
+        end
     end
 
     -- Draw projectiles
     for key, projectile in pairs(Projectiles) do
-        local x, y = projectile.body:getPosition()
-        love.graphics.draw(projectile.sprite, x, y, 0, 1, 1, projectile.sprite:getWidth() / 2,
-            projectile.sprite:getHeight() / 2)
+        if not projectile.body:isDestroyed() then
+            local x, y = projectile.body:getPosition()
+            love.graphics.draw(projectile.sprite, x, y, 0, 1, 1, projectile.sprite:getWidth() / 2,
+                projectile.sprite:getHeight() / 2)
+        end
     end
 
     -- Draw enemies
@@ -223,7 +227,8 @@ local function fire_shotgun_shot(x, y)
 
     -- Create and insert three projectiles with the different directions
     for _, dir in ipairs(directions) do
-        table.insert(Projectiles, projectile.CreateProjectile(dir))
+        local pro = projectile.CreateProjectile(dir)
+        Projectiles[pro.id] = pro
     end
 
     shooting_cooldown_timer = SHOOTING_COOLDOWN
@@ -241,7 +246,7 @@ function kreem.mousepressed(x, y, button, istouch, presses)
     -- 1 represents the left mouse button
     if button == 1 and shooting_cooldown_timer <= 0 then
         local wx, wy = windowToWorld(x, y)
-        if Player.upgrades["shotgun"] ~= nil then
+        if Player.upgrades[upgrade_consts.UPGRADE_SHOTGUN] ~= nil then
             fire_shotgun_shot(wx, wy)
         else
             fire_single_shot(wx, wy)
@@ -262,18 +267,6 @@ local function handle_shooting_timer(dt)
         shooting_cooldown_timer = shooting_cooldown_timer - dt
     end
 end
-
--- TODO Reimplement
--- local function handle_player_collision(dt)
---     for key, curPowerup in pairs(Powerups) do
---         local collided = collision.CheckCircleCollision(Player.x, Player.y, Player.radius, curPowerup.x, curPowerup.y,
---             curPowerup.radius)
---         if collided then
---             Player.upgrades["shotgun"] = true
---             Powerups[key] = nil
---         end
---     end
--- end
 
 local function handle_camera()
     -- Center on player
@@ -306,7 +299,9 @@ collision.CollisionEmitter:on(consts.COLLISION_BULLET_WALL, function(bullet_data
 end)
 
 collision.CollisionEmitter:on(consts.COLLISION_BULLET_ENEMY, function(bullet_data, enemy_data)
-    Enemies[enemy_data.id].hp = Enemies[enemy_data.id].hp - Projectiles[bullet_data.id].dmg
+    local enemy = Enemies[enemy_data.id]
+    local pro = Projectiles[bullet_data.id]
+    enemy.hp = enemy.hp - pro.dmg
 
     -- Cleanup projectile
     bullet_data.body:destroy()
@@ -317,5 +312,9 @@ collision.CollisionEmitter:on(consts.COLLISION_ENEMY_PLAYER, function(enemy_data
     Enemies[enemy_data.id]:attack_player()
 end)
 
+collision.CollisionEmitter:on(consts.COLLISION_UPGRADE_PLAYER, function(upgrade_data, player_data)
+    Player.upgrades[upgrade_data.type] = true
+    Upgrades[upgrade_data.id]:destroy()
+end)
 
 return kreem

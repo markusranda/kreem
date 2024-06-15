@@ -16,6 +16,9 @@ local collisionHandlers = {
     end,
     ["EnemyPlayer"] = function(enemy_data, player_data)
         collision.CollisionEmitter:emit(consts.COLLISION_ENEMY_PLAYER, enemy_data, player_data)
+    end,
+    ["UpgradePlayer"] = function(upgrade_data, player_data)
+        collision.CollisionEmitter:emit(consts.COLLISION_UPGRADE_PLAYER, upgrade_data, player_data)
     end
 }
 

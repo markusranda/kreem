@@ -1,7 +1,8 @@
-local uuid = require("src.uuid")
-local consts = require("src.collision.consts")
-local kreem_audio = require("src.kreem_audio")
-local enemy_finger = {}
+local uuid           = require("src.uuid")
+local consts         = require("src.collision.consts")
+local kreem_audio    = require("src.kreem_audio")
+local shotgun        = require("src.upgrade.shotgun")
+local enemy_finger   = {}
 enemy_finger.__index = enemy_finger
 
 function enemy_finger:update(dt)
@@ -44,6 +45,14 @@ function enemy_finger:attack_player()
 end
 
 function enemy_finger:destroy()
+    -- Check if player gets drop
+    local rand = math.random()
+    if rand <= self.loot_chance then
+        local x, y = self.body:getPosition()
+        local shotgun = shotgun:create(x, y)
+        Upgrades[shotgun.id] = shotgun
+    end
+
     Enemies[self.id] = nil
     if not self.body:isDestroyed() then
         self.body:destroy()
@@ -58,6 +67,8 @@ function enemy_finger.create(posX, posY)
     self.shape = love.physics.newCircleShape(self.radius)
     self.fixture = love.physics.newFixture(self.body, self.shape)
     self.fixture:setUserData({ name = "Enemy", body = self.body, id = self.id })
+    self.fixture:setCategory(consts.COLLISION_CATEGORY_ENEMY)
+    self.fixture:setMask(consts.COLLISION_CATEGORY_WALL)
     self.sprite = love.graphics.newImage("assets/finger.png")
     self.direction = { x = 0, y = -1 }
     self.speed = 150
@@ -65,8 +76,8 @@ function enemy_finger.create(posX, posY)
     self.dmg = 10
     self.attack_timer = 0
     self.attack_cooldown = 0.5
-    self.fixture:setCategory(consts.COLLISION_CATEGORY_ENEMY)
-    self.fixture:setMask(consts.COLLISION_CATEGORY_WALL)
+    self.loot = "Shotgun"
+    self.loot_chance = 1
 
     return self
 end
