@@ -4,21 +4,32 @@ local collision    = {
     CollisionEmitter = EventEmitter:new()
 }
 
+local collisionHandlers = {
+    ["PlayerTeleport"] = function(userDataA, userDataB)
+        collision.CollisionEmitter:emit(consts.COLLISION_PLAYER_TELEPORT, userDataA, userDataB)
+    end,
+    ["BulletWall"] = function(userDataA, userDataB)
+        collision.CollisionEmitter:emit(consts.COLLISION_BULLET_WALL, userDataA, userDataB)
+    end,
+}
+
 function collision.BeginContact(a, b, coll)
     local userDataA = a:getUserData()
     local userDataB = b:getUserData()
 
-    if userDataA and userDataB then
-        -- Teleport time
-        if (userDataA.name == "Player" and userDataB.name == "Teleport") then
-            collision.CollisionEmitter:emit(consts.COLLISION_PLAYER_TELEPORT, userDataA, userDataB)
-        elseif ((userDataA.name == "Teleport" and userDataB.name == "Player")) then
-            collision.CollisionEmitter:emit(consts.COLLISION_PLAYER_TELEPORT, userDataB, userDataA)
-            -- Bullets on my walls
-        elseif (userDataA.name == "Bullet" and userDataB.name == "Wall") then
-            collision.CollisionEmitter:emit(consts.COLLISION_BULLET_WALL, userDataA, userDataB)
-        elseif ((userDataA.name == "Wall" and userDataB.name == "Bullet")) then
-            collision.CollisionEmitter:emit(consts.COLLISION_BULLET_WALL, userDataB, userDataA)
+    if not userDataA or not userDataB then return end
+
+    local key = userDataA.name .. userDataB.name
+    local handler = collisionHandlers[key]
+
+    if handler then
+        handler(userDataA, userDataB)
+    else
+        -- Handle reversed pairs
+        key = userDataB.name .. userDataA.name
+        handler = collisionHandlers[key]
+        if handler then
+            handler(userDataB, userDataA)
         end
     end
 end
