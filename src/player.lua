@@ -29,27 +29,19 @@ local function drawPlayer(self)
     local originY = 32 / 2 + (self.radius / 2)
 
     local maxArmLength = 5
-    local aimOffsetX = (self.aimPos.x - self.x) * (maxArmLength / love.graphics.getWidth()) * self.direction.x
-    local aimOffsetY = (self.aimPos.y - self.y) * (maxArmLength / love.graphics.getHeight())
+    local x, y = Player.body:getPosition()
+    local aimOffsetX = (self.aimPos.x - x) * (maxArmLength / love.graphics.getWidth()) * self.direction.x
+    local aimOffsetY = (self.aimPos.y - y) * (maxArmLength / love.graphics.getHeight())
     local frontArmX = originX - 22 - aimOffsetX
     local backArmX = frontArmX - 3
     local armY = originY - 22 - aimOffsetY
 
-    if self.shape then
-        -- draw the players physics shape (shape from love2d physics package)
-        local circle = self.shape
-        local radius = circle:getRadius()
-        love.graphics.setColor(0, 0, 0, 0.5)
-        love.graphics.circle("fill", self.x, self.y, radius)
-        love.graphics.setColor(1, 1, 1, 1)
-    end
-
-    ArmSprite:draw(PlayerSheet, self.x, self.y, 0, scaleX, 1, backArmX, armY)
+    ArmSprite:draw(PlayerSheet, x, y, 0, scaleX, 1, backArmX, armY)
 
     if self.state == "idle" then
-        IdleAnim:draw(PlayerSheet, self.x, self.y, 0, scaleX, 1, originX, originY)
+        IdleAnim:draw(PlayerSheet, x, y, 0, scaleX, 1, originX, originY)
     elseif self.state == "run" then
-        RunAnim:draw(PlayerSheet, self.x, self.y, 0, scaleX, 1, originX, originY)
+        RunAnim:draw(PlayerSheet, x, y, 0, scaleX, 1, originX, originY)
     else
         error("Invalid state> ", self.state)
     end
@@ -58,11 +50,9 @@ local function drawPlayer(self)
 end
 
 
-local function create_player(xPos, yPos)
+local function create_player()
     loadSprites()
     return {
-        x = xPos,
-        y = yPos,
         sprite = love.graphics.newImage("assets/hat.png"),
         direction = { x = 0, y = -1 },
         aimPos = { x = 0, y = 0 },
@@ -81,13 +71,12 @@ function player.InitPlayer(xPos, yPos)
     -- Initialize player
     local mapWidth = CurrentMap.width * CurrentMap.tilewidth
     local mapHeight = CurrentMap.height * CurrentMap.tileheight
-    Player = create_player(mapWidth / 2, mapHeight / 2)
+    Player = create_player()
     if not xPos then
-        xPos = Player.x
+        xPos = mapWidth / 2
     end
-
     if not yPos then
-        yPos = Player.y
+        yPos = mapHeight / 2
     end
 
     -- Make player a physics object

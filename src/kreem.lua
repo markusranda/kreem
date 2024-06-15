@@ -193,8 +193,9 @@ end
 
 local function fire_single_shot(x, y)
     -- Calculate the difference in coordinates
-    local dx = x - Player.x
-    local dy = y - Player.y
+    local xP, yP = Player.body:getPosition()
+    local dx = x - xP
+    local dy = y - yP
     local length = math.sqrt(dx * dx + dy * dy)
 
     -- Normalize the vector (make it unit length)
@@ -211,8 +212,9 @@ end
 
 local function fire_shotgun_shot(x, y)
     -- Calculate the difference in coordinates
-    local dx = x - Player.x
-    local dy = y - Player.y
+    local xP, yP = Player.body:getPosition()
+    local dx = x - xP
+    local dy = y - yP
     local length = math.sqrt(dx * dx + dy * dy)
 
     -- Normalize the vector (make it unit length)
@@ -272,35 +274,33 @@ local function handle_shooting_timer(dt)
     end
 end
 
-local function handle_player_collision(dt)
-    for key, curPowerup in pairs(Powerups) do
-        local collided = collision.CheckCircleCollision(Player.x, Player.y, Player.radius, curPowerup.x, curPowerup.y,
-            curPowerup.radius)
-        if collided then
-            Player.upgrades["shotgun"] = true
-            Powerups[key] = nil
-        end
-    end
-end
+-- TODO Reimplement
+-- local function handle_player_collision(dt)
+--     for key, curPowerup in pairs(Powerups) do
+--         local collided = collision.CheckCircleCollision(Player.x, Player.y, Player.radius, curPowerup.x, curPowerup.y,
+--             curPowerup.radius)
+--         if collided then
+--             Player.upgrades["shotgun"] = true
+--             Powerups[key] = nil
+--         end
+--     end
+-- end
 
 local function handle_camera()
     -- Center on player
-    Camera.x = Player.x - (love.graphics.getWidth() / 2) / Camera.zoom
-    Camera.y = Player.y - (love.graphics.getHeight() / 2) / Camera.zoom
+    local x, y = Player.body:getPosition()
+    Camera.x = x - (love.graphics.getWidth() / 2) / Camera.zoom
+    Camera.y = y - (love.graphics.getHeight() / 2) / Camera.zoom
 end
 
 function kreem.update(dt)
     CurrentMap:update(dt)
     World:update(dt)
 
-    -- TODO Remove
-    Player.x, Player.y = Player.body:getPosition()
-
     handle_movement(dt)
     handle_shooting_timer(dt)
     handle_enemy_dmg_timers(dt)
     handle_enemies()
-    handle_player_collision(dt)
     handle_camera()
 
     Player:update(dt)
