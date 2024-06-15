@@ -1,8 +1,10 @@
-local sti = require("src.sti")
-local player = require("src.player")
+local sti         = require("src.sti")
+local player      = require("src.player")
 local debug_print = require("src.debug_print.print_table")
+local collision   = require("src.collision.collision")
+local consts      = require("src.collision.consts")
 
-local kreem_maps = {
+local kreem_maps  = {
     maps = {
         room_1 = sti("assets/maps/room_1.lua", { "box2d" }),
         room_2 = sti("assets/maps/room_2.lua", { "box2d" }),
@@ -113,18 +115,6 @@ local function create_tile_fixtures(map, layer_name)
     end
 end
 
-local function beginContact(a, b, coll)
-    local userDataA = a:getUserData()
-    local userDataB = b:getUserData()
-
-    if userDataA and userDataB then
-        if (userDataA.name == "Player" and userDataB.name == "Teleport") then
-            kreem_maps.load_next_map(userDataB.properties.direction)
-        elseif ((userDataA.name == "Teleport" and userDataB.name == "Player")) then
-            kreem_maps.load_next_map(userDataA.properties.direction)
-        end
-    end
-end
 
 local function init_map(map)
     if CurrentMap then
@@ -141,7 +131,7 @@ local function init_map(map)
     create_tile_fixtures(map, "Walls")
 
     CurrentMap = map
-    World:setCallbacks(beginContact, endContact, preSolve, postSolve)
+    World:setCallbacks(collision.BeginContact, endContact, preSolve, postSolve)
 end
 
 function kreem_maps.load_first_map()
@@ -238,5 +228,11 @@ function kreem_maps.load_next_map(incoming_direction)
         error("Player did not get initialized, no teleport was found in next room")
     end
 end
+
+-- Event handling
+collision.CollisionEmitter:on(consts.COLLISION_PLAYER_TELEPORT, function(player_data, teleport_data)
+    kreem_maps.load_next_map(teleport_data.properties.direction)
+end)
+
 
 return kreem_maps

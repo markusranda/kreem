@@ -1,6 +1,6 @@
 local enemy = {}
 local uuid = require("src.uuid")
-local collision = require("src.collision")
+local collision = require("src.collision.collision")
 local kreem_audio = require("src.kreem_audio")
 uuid.seed()
 
