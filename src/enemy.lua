@@ -69,7 +69,6 @@ local function bossEnemyUpdate(selectedEnemy, dt)
             selectedEnemy.state.timer = 0
         end
     elseif selectedEnemy.state.name == "charging_windup" then
-        print("charging_windup")
         selectedEnemy.speed = ENEMY_SPEED * .5
         if selectedEnemy.charge_direction == nil then
             selectedEnemy.charge_direction = { x = 0, y = 0 }
@@ -88,8 +87,6 @@ local function bossEnemyUpdate(selectedEnemy, dt)
             selectedEnemy.state.name = "charging_attack"
         end
     elseif selectedEnemy.state.name == "charging_attack" then
-        print("charging_attack")
-        print(selectedEnemy.state.distanceTravelled)
         if selectedEnemy.state.distanceTravelled == nil then
             selectedEnemy.state.distanceTravelled = 0
         end

@@ -6,7 +6,6 @@ IdleAnim = {}
 RunAnim = {}
 
 local function loadSprites()
-    print("Loading player")
     PlayerSheet = love.graphics.newImage('assets/player-sheet.png')
     local g = anim8.newGrid(32, 32, PlayerSheet:getWidth(), PlayerSheet:getHeight())
 
@@ -34,8 +33,6 @@ local function drawPlayer(self)
     local frontArmX = originX - 22 - aimOffsetX
     local backArmX = frontArmX - 3
     local armY = originY - 22 - aimOffsetY
-
-    print(aimOffsetX)
 
     if self.shape then
         -- draw the players physics shape (shape from love2d physics package)
