@@ -1,5 +1,6 @@
 local player = {}
 local anim8 = require("src.anim8")
+local consts = require("src.collision.consts")
 
 PlayerSheet = {}
 IdleAnim = {}
@@ -95,6 +96,8 @@ function player.InitPlayer(xPos, yPos)
 
     Player.fixture = love.physics.newFixture(Player.body, Player.shape)
     Player.fixture:setUserData({ name = "Player" })
+    Player.fixture:setCategory(consts.COLLISION_CATEGORY_PLAYER)
+    Player.fixture:setMask(consts.COLLISION_CATEGORY_PROJECTILE)
 end
 
 return player

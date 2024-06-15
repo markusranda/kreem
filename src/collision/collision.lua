@@ -9,10 +9,16 @@ function collision.BeginContact(a, b, coll)
     local userDataB = b:getUserData()
 
     if userDataA and userDataB then
+        -- Teleport time
         if (userDataA.name == "Player" and userDataB.name == "Teleport") then
             collision.CollisionEmitter:emit(consts.COLLISION_PLAYER_TELEPORT, userDataA, userDataB)
         elseif ((userDataA.name == "Teleport" and userDataB.name == "Player")) then
             collision.CollisionEmitter:emit(consts.COLLISION_PLAYER_TELEPORT, userDataB, userDataA)
+            -- Bullets on my walls
+        elseif (userDataA.name == "Bullet" and userDataB.name == "Wall") then
+            collision.CollisionEmitter:emit(consts.COLLISION_BULLET_WALL, userDataA, userDataB)
+        elseif ((userDataA.name == "Wall" and userDataB.name == "Bullet")) then
+            collision.CollisionEmitter:emit(consts.COLLISION_BULLET_WALL, userDataB, userDataA)
         end
     end
 end

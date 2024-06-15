@@ -1,10 +1,9 @@
-local sti         = require("src.sti")
-local player      = require("src.player")
-local debug_print = require("src.debug_print.print_table")
-local collision   = require("src.collision.collision")
-local consts      = require("src.collision.consts")
+local sti        = require("src.sti")
+local player     = require("src.player")
+local collision  = require("src.collision.collision")
+local consts     = require("src.collision.consts")
 
-local kreem_maps  = {
+local kreem_maps = {
     maps = {
         room_1 = sti("assets/maps/room_1.lua", { "box2d" }),
         room_2 = sti("assets/maps/room_2.lua", { "box2d" }),
@@ -64,7 +63,7 @@ function MapNode:getNeighbor(direction)
     return self.neighbors[direction]
 end
 
-local function create_object_fixtures(map, layer_name, objectName)
+local function create_object_fixtures(map, layer_name, objectName, category)
     local objectLayer = map.layers[layer_name]
 
     if objectLayer and objectLayer.objects then
@@ -82,13 +81,14 @@ local function create_object_fixtures(map, layer_name, objectName)
             end
 
             fixture:setUserData(userData)
+            fixture:setCategory(category)
         end
     else
         print(layer_name .. " layer or objects not found!")
     end
 end
 
-local function create_tile_fixtures(map, layer_name)
+local function create_tile_fixtures(map, layer_name, name, category)
     local collisionLayer = map.layers[layer_name]
     if collisionLayer and collisionLayer.chunks then
         for _, chunk in ipairs(collisionLayer.chunks) do
@@ -106,7 +106,12 @@ local function create_tile_fixtures(map, layer_name)
                             local body = love.physics.newBody(World, worldX + map.tilewidth / 2,
                                 worldY + map.tileheight / 2, "static")
                             local shape = love.physics.newRectangleShape(0, 0, map.tilewidth, map.tileheight)
-                            love.physics.newFixture(body, shape)
+                            local fixture = love.physics.newFixture(body, shape)
+                            local userData = {
+                                name = name,
+                            }
+                            fixture:setUserData(userData)
+                            fixture:setCategory(category)
                         end
                     end
                 end
@@ -127,8 +132,8 @@ local function init_map(map)
     map:box2d_init(World)
 
     -- Create fixtures for objects in the Teleports layer
-    create_object_fixtures(map, "Teleports", "Teleport")
-    create_tile_fixtures(map, "Walls")
+    create_object_fixtures(map, "Teleports", "Teleport", consts.COLLISION_CATEGORY_TELEPORT)
+    create_tile_fixtures(map, "Walls", "Wall", consts.COLLISION_CATEGORY_WALL)
 
     CurrentMap = map
     World:setCallbacks(collision.BeginContact, endContact, preSolve, postSolve)

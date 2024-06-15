@@ -1,14 +1,13 @@
 local projectile              = require("src.projectile")
 local enemy                   = require("src.enemy")
-local collision               = require("src.collision")
+local collision               = require("src.collision.collision")
 local powerup                 = require("src.powerup")
-local player                  = require("src.player")
 local kreem_audio             = require("src.kreem_audio")
 local kreem_maps              = require("src.kreem_maps")
 local ui_hp                   = require("src.ui.ui_hp")
+local consts                  = require("src.collision.consts")
 local kreem                   = {}
 
-BULLET_SPEED                  = 600
 ENEMY_SPEED                   = 150
 SHOOTING_COOLDOWN             = 0.5
 ENEMY_DMG_COOLDOWN            = 0.5
@@ -72,7 +71,8 @@ function kreem.draw()
 
     -- Draw projectiles
     for key, projectile in pairs(Projectiles) do
-        love.graphics.draw(projectile.sprite, projectile.x, projectile.y, 0, 1, 1, projectile.sprite:getWidth() / 2,
+        local x, y = projectile.body:getPosition()
+        love.graphics.draw(projectile.sprite, x, y, 0, 1, 1, projectile.sprite:getWidth() / 2,
             projectile.sprite:getHeight() / 2)
     end
 
@@ -132,36 +132,10 @@ local function handle_movement(dt)
         Player.state = "idle"
     end
 
-
     -- Apply force to the physics body
-    Player.body:setLinearVelocity(moveX * Player.speed, moveY * Player.speed)
-end
-
-local function handle_projectiles(dt)
-    for key, projectile in pairs(Projectiles) do
-        local collided = false
-        for key, enemy in pairs(Enemies) do
-            collided = collision.CheckCircleCollision(projectile.x, projectile.y, projectile.radius, enemy.x,
-                enemy.y,
-                enemy.radius)
-
-            if collided then
-                enemy.hp = enemy.hp - Player.dmg
-                kreem_audio.sounds.enemy_damage:play()
-                if enemy.hp <= 0 then
-                    kreem_audio.sounds.enemy_death:play()
-                end
-            end
-        end
-
-        projectile.x = projectile.x + projectile.direction.x * projectile.speed * dt
-        projectile.y = projectile.y + projectile.direction.y * projectile.speed * dt
-
-        -- Remove bullet if collision
-        if collided then
-            Projectiles[key] = nil
-        end
-    end
+    local xVel = moveX * Player.speed
+    local yVel = moveY * Player.speed
+    Player.body:setLinearVelocity(xVel, yVel)
 end
 
 local function spawn_enemy()
@@ -249,8 +223,9 @@ local function fire_single_shot(x, y)
         dy = dy / length
     end
 
-    local direction = { x = dx, y = dy }
-    table.insert(Projectiles, projectile.CreateProjectile(direction))
+    local dir = { x = dx, y = dy }
+    local pro = projectile.CreateProjectile(dir)
+    Projectiles[pro.id] = pro
     shooting_cooldown_timer = SHOOTING_COOLDOWN
 end
 
@@ -343,11 +318,16 @@ function kreem.update(dt)
 
     handle_movement(dt)
     handle_shooting_timer(dt)
-    handle_projectiles(dt)
     handle_enemy_dmg_timers(dt)
     handle_enemies(dt)
     handle_player_collision(dt)
     handle_camera()
+
+    -- Print the position of all projectiles
+    -- for _, projectile in pairs(Projectiles) do
+    --     local x, y = projectile.body:getPosition()
+    --     print("Bullet position:", x, y)
+    -- end
 
     Player:update(dt)
 
@@ -357,5 +337,10 @@ function kreem.update(dt)
         spawn_enemy()
     end
 end
+
+collision.CollisionEmitter:on(consts.COLLISION_BULLET_WALL, function(bulletData, wallData)
+    bulletData.body:destroy()
+    Projectiles[bulletData.id] = nil
+end)
 
 return kreem
