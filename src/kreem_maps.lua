@@ -14,9 +14,10 @@ local kreem_maps = {
         north = {},
         west = {},
         east = {},
-    }
+    },
+    root = {},
+    current_node = {}
 }
-
 
 -- Init maps_by_direction
 (function()
@@ -41,16 +42,24 @@ local kreem_maps = {
     end
 end)()
 
--- print all map names
-local function print_names()
-    local maps = kreem_maps.maps
-    for key, map in pairs(kreem_maps.maps) do
-        print("Map name:", map.properties.name or "Unnamed map")
-    end
+local MapNode = {}
+MapNode.__index = MapNode
+
+function MapNode:new(name, map)
+    return setmetatable({
+        name = name,
+        map = map,
+        neighbors = {}
+    }, MapNode)
 end
 
-print_names()
+function MapNode:addNeighbor(direction, neighbor)
+    self.neighbors[direction] = neighbor
+end
 
+function MapNode:getNeighbor(direction)
+    return self.neighbors[direction]
+end
 
 local function create_object_fixtures(map, layerName, objectName)
     local objectLayer = map.layers[layerName]
@@ -109,7 +118,13 @@ local function init_map(map)
 end
 
 function kreem_maps.load_first_map()
-    init_map(kreem_maps.maps["room_1"])
+    -- Setup root node
+    local map = kreem_maps.maps["room_1"]
+    local root_node = MapNode:new("room_1", map)
+    kreem_maps.root = root_node
+    kreem_maps.current_node = root_node
+
+    init_map(map)
 end
 
 local function get_opposite_direction(incoming_direction)
@@ -128,20 +143,30 @@ local function get_opposite_direction(incoming_direction)
     return dir
 end
 
+local function get_random_map(direction)
+    local possible_maps = kreem_maps.maps_by_direction[direction]
+    local map = possible_maps[math.random(1, #possible_maps)]
+
+    return map, map.properties.name
+end
+
 function kreem_maps.load_next_map(incoming_direction)
-    print("Getting map for incoming_direction", incoming_direction)
     local direction = get_opposite_direction(incoming_direction)
-    print(string.format("Exiting from %s, entering from %s", incoming_direction, direction))
-    local maps = kreem_maps.maps_by_direction[direction]
-    if #maps < 1 then
-        error("No possible maps exist, please check maps configuration")
-        return
+    local current_node = kreem_maps.current_node
+
+    -- Get next node from current_node if possible
+    local next_node = current_node:getNeighbor(direction)
+    if not next_node then
+        -- Get a new random map
+        local next_map, map_name = get_random_map(direction)
+        next_node = MapNode:new(map_name, next_map)
+        current_node:addNeighbor(direction, next_node)
+        next_node:addNeighbor(incoming_direction, current_node)
     end
-    local index = math.random(1, #maps)
-    local map = maps[index]
-    print(string.format("Exiting map  %s", CurrentMap.properties.name))
-    init_map(map)
-    print(string.format("Entering map %s", CurrentMap.properties.name))
+
+    kreem_maps.current_node = next_node
+
+    init_map(next_node.map)
 end
 
 return kreem_maps
