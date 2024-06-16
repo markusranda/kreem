@@ -59,6 +59,7 @@ function player:create()
     self.dmg = 50
     self.radius = 10
     self.hp = 100
+    self.hp_max = 100
     self.prev_hp = 100
     self.speed = 200
     self.upgrades = {}
