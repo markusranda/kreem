@@ -126,6 +126,19 @@ function kreem.load()
     handle_spawn_enemies()
 end
 
+local function draw_damage_indicator()
+    if Player.taken_dmg_timer > 0 then
+        local transparency = (Player.taken_dmg_timer / Player.taken_dmg_duration) - 0.5
+        local camWidth = love.graphics.getWidth() / Camera.zoom
+        local camHeight = love.graphics.getHeight() / Camera.zoom
+        local camX = Camera.x
+        local camY = Camera.y
+
+        love.graphics.setColor(1, 0, 0, transparency)
+        love.graphics.rectangle("fill", camX, camY, camWidth, camHeight)
+    end
+end
+
 function kreem.draw()
     love.graphics.push()
     love.graphics.scale(Camera.zoom, Camera.zoom)
@@ -178,6 +191,8 @@ function kreem.draw()
 
     love.graphics.setColor(0, 0, 0, transparency)
     love.graphics.rectangle("fill", camX, camY, camWidth, camHeight)
+
+    draw_damage_indicator()
 
     -- Draw physics shapes for debugging
     -- for _, body in pairs(World:getBodies()) do

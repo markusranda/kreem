@@ -35,8 +35,6 @@ function enemy_finger:attack_player()
     if self.attack_timer <= 0 then
         Player.hp = Player.hp - self.dmg
         self.attack_timer = self.attack_cooldown
-        kreem_audio.sounds.player_damage:stop()
-        kreem_audio.sounds.player_damage:play()
     end
 end
 

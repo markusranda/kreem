@@ -111,8 +111,6 @@ function enemy_finger_boss:attack_player()
         -- Damage the player
         Player.hp = Player.hp - self.dmg
         self.attack_timer = self.attack_cooldown
-        kreem_audio.sounds.player_damage:stop()
-        kreem_audio.sounds.player_damage:play()
     end
 
     self.attack_direction = nil

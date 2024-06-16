@@ -1,5 +1,6 @@
 local anim8 = require("src.anim8")
 local consts = require("src.collision.consts")
+local kreem_audio = require("src.kreem_audio")
 local player = {}
 player.__index = player
 
@@ -9,6 +10,15 @@ function player:update(dt)
     elseif self.state == "run" then
         self.run_anim:update(dt)
     end
+
+    if (self.prev_hp ~= self.hp) then
+        kreem_audio.sounds.player_damage:stop()
+        kreem_audio.sounds.player_damage:play()
+        self.taken_dmg_timer = self.taken_dmg_duration
+    end
+
+    self.taken_dmg_timer = self.taken_dmg_timer - dt
+    self.prev_hp = self.hp
 end
 
 function player:draw()
@@ -49,9 +59,12 @@ function player:create()
     self.dmg = 50
     self.radius = 10
     self.hp = 100
+    self.prev_hp = 100
     self.speed = 200
     self.upgrades = {}
     self.state = "idle"
+    self.taken_dmg_timer = 0
+    self.taken_dmg_duration = 1
     self:create_body()
 
     return self
