@@ -9,6 +9,7 @@ local consts                  = require("src.collision.consts")
 local upgrade_consts          = require("src.upgrade.upgrade_consts")
 local kreem_teleport          = require("src.kreem_teleport")
 local player                  = require("src.player")
+local ui_upgrades             = require("src.ui.ui_upgrades")
 local kreem                   = {}
 
 local level_state_consts      = {
@@ -139,19 +140,18 @@ local function draw_damage_indicator()
     end
 end
 
-function kreem.draw()
-    love.graphics.push()
-    love.graphics.scale(Camera.zoom, Camera.zoom)
-    love.graphics.translate(-Camera.x, -Camera.y)
+local function draw_physics_shapes()
+    for _, body in pairs(World:getBodies()) do
+        for _, fixture in pairs(body:getFixtures()) do
+            local shape = fixture:getShape()
+            if shape:typeOf("PolygonShape") then
+                love.graphics.polygon("line", body:getWorldPoints(shape:getPoints()))
+            end
+        end
+    end
+end
 
-    -- Draw map
-    love.graphics.setColor(1, 1, 1)
-    CurrentMap:draw(-Camera.x, -Camera.y, Camera.zoom, Camera.zoom)
-
-    -- Draw player
-    Player:draw()
-
-    -- Draw upgrades
+local function draw_upgrades()
     for key, curPowerup in pairs(Upgrades) do
         if not curPowerup.body:isDestroyed() then
             local x, y = curPowerup.body:getPosition()
@@ -159,8 +159,9 @@ function kreem.draw()
                 curPowerup.sprite:getHeight() / 2)
         end
     end
+end
 
-    -- Draw projectiles
+local function draw_projectiles()
     for key, projectile in pairs(Projectiles) do
         if not projectile.body:isDestroyed() then
             local x, y = projectile.body:getPosition()
@@ -168,8 +169,9 @@ function kreem.draw()
                 projectile.sprite:getHeight() / 2)
         end
     end
+end
 
-    -- Draw enemies
+local function draw_enemies()
     for key, curEnemy in pairs(KreemWorld[CurrentLevel].root.enemies) do
         local angle = math.atan2(curEnemy.direction.y, curEnemy.direction.x) + math.pi / 2
         if not curEnemy.body:isDestroyed() then
@@ -181,8 +183,9 @@ function kreem.draw()
             love.graphics.draw(curEnemy.sprite, x, y, angle, scale_factor, scale_factor, w, h)
         end
     end
+end
 
-    -- Draw the entire scene with the blur effect
+local function draw_entering_room()
     local transparency = ChangeLevelJob.duration / LEVEL_LOAD_TIME
     local camWidth = love.graphics.getWidth() / Camera.zoom
     local camHeight = love.graphics.getHeight() / Camera.zoom
@@ -191,28 +194,31 @@ function kreem.draw()
 
     love.graphics.setColor(0, 0, 0, transparency)
     love.graphics.rectangle("fill", camX, camY, camWidth, camHeight)
+end
 
+function kreem.draw()
+    love.graphics.push()
+    love.graphics.scale(Camera.zoom, Camera.zoom)
+    love.graphics.translate(-Camera.x, -Camera.y)
+
+    -- Draw map
+    love.graphics.setColor(1, 1, 1)
+    CurrentMap:draw(-Camera.x, -Camera.y, Camera.zoom, Camera.zoom)
+
+    Player:draw()
+    draw_upgrades()
+    draw_projectiles()
+    draw_enemies()
+    draw_entering_room()
     draw_damage_indicator()
-
-    -- Draw physics shapes for debugging
-    -- for _, body in pairs(World:getBodies()) do
-    --     for _, fixture in pairs(body:getFixtures()) do
-    --         local shape = fixture:getShape()
-    --         if shape:typeOf("PolygonShape") then
-    --             love.graphics.polygon("line", body:getWorldPoints(shape:getPoints()))
-    --         end
-    --     end
-    -- end
+    -- draw_physics_shapes()
 
     love.graphics.pop()
 
     -- Draw UI
     love.graphics.setColor(1, 1, 1)
-    ui_hp.draw_hp(Player)
-    for key, bool in pairs(Player.upgrades) do
-        local width = love.graphics.getWidth()
-        love.graphics.print(key, width - 15 - love.graphics.getFont():getWidth(key), 15)
-    end
+    ui_hp.draw(Player)
+    ui_upgrades.draw(Player)
 end
 
 local function handle_movement(dt)

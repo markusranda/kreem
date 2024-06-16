@@ -1,6 +1,6 @@
 local ui_hp = {}
 
-function ui_hp.draw_hp(player)
+function ui_hp.draw(player)
     love.graphics.print(string.format("HP: %s", player.hp), 15, 15)
 end
 
