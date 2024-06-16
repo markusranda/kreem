@@ -36,6 +36,7 @@ local shooting_cooldown_timer = 0
 function kreem.load()
     -- Setup window
     love.window.setMode(1280, 1024, { fullscreen = false, resizable = true })
+    love.window.setTitle("KREEM")
 
     -- Setup sounds
     kreem_audio.Init()
