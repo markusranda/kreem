@@ -193,7 +193,7 @@ local function spawn_enemy()
     end
 
     local posX, posY = getRandomBorderPosition()
-    local createdEnemy = enemy_finger.create(posX, posY)
+    local createdEnemy = enemy_finger:create(posX, posY)
 
     Enemies[createdEnemy.id] = createdEnemy
 end

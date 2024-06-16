@@ -2,6 +2,7 @@ local uuid           = require("src.uuid")
 local consts         = require("src.collision.consts")
 local kreem_audio    = require("src.kreem_audio")
 local shotgun        = require("src.upgrade.shotgun")
+local kreem_vector   = require("src.kreem_vector")
 local enemy_finger   = {}
 enemy_finger.__index = enemy_finger
 
@@ -12,13 +13,8 @@ function enemy_finger:update(dt)
         local pX, pY = Player.body:getPosition()
         local dx = pX - x
         local dy = pY - y
-        local length = math.sqrt(dx * dx + dy * dy)
 
-        -- Normalize the vector (make it unit length)
-        if length ~= 0 then
-            dx = dx / length
-            dy = dy / length
-        end
+        dx, dy = kreem_vector.normalize(dx, dy)
 
         -- Update self velocity
         local xVel = dx * self.speed
@@ -61,7 +57,7 @@ function enemy_finger:destroy()
     Enemies[self.id] = nil
 end
 
-function enemy_finger.create(posX, posY)
+function enemy_finger:create(posX, posY)
     local self = setmetatable({}, enemy_finger)
     self.radius = 16
     self.id = uuid.new()
