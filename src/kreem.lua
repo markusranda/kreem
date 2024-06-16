@@ -14,11 +14,14 @@ local kreem                   = {}
 
 local level_state_consts      = {
     RUNNING = "RUNNING",
-    LOADING = "LOADING"
+    LOADING = "LOADING",
+    PAUSED = "PAUSED"
 }
 MAX_ENEMIES                   = 4
 LEVEL_LOAD_TIME               = 0.5
+DEATH_SCREEN_DURATION         = 1.5
 ChangeLevelJob                = { duration = 0, direction = "", loaded = true }
+DeathScreenJob                = { duration = 0, running = false }
 LevelState                    = level_state_consts.RUNNING
 SHOOTING_COOLDOWN             = 0.5
 Camera                        = {
@@ -196,6 +199,34 @@ local function draw_entering_room()
     love.graphics.rectangle("fill", camX, camY, camWidth, camHeight)
 end
 
+local function draw_death_screen()
+    if (DeathScreenJob.running) then
+        local transparency = 1 - (DeathScreenJob.duration / DEATH_SCREEN_DURATION)
+        local camWidth = love.graphics.getWidth() / Camera.zoom
+        local camHeight = love.graphics.getHeight() / Camera.zoom
+        local camX = Camera.x
+        local camY = Camera.y
+
+        love.graphics.setColor(0, 0, 0, transparency)
+        love.graphics.rectangle("fill", camX, camY, camWidth, camHeight)
+        local font_size = 22
+        local font = love.graphics.newFont(font_size)
+        local text_game_over = "GAME OVER"
+        local text_width = font:getWidth(text_game_over)
+        local text_height = font:getHeight(text_game_over)
+        love.graphics.setFont(font)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.print(text_game_over, (camX + camWidth / 2) - (text_width / 2),
+            (camY + camHeight / 2) - (text_height / 2))
+
+        local text_fool = "FOoOOOoOOooOooOOoOOool"
+        local text_width_fool = font:getWidth(text_fool)
+        local text_height_fool = font:getHeight(text_fool)
+        love.graphics.print(text_fool, (camX + camWidth / 2) - (text_width_fool / 2),
+            (camY + camHeight / 2) - (text_height_fool / 2) + font_size)
+    end
+end
+
 function kreem.draw()
     love.graphics.push()
     love.graphics.scale(Camera.zoom, Camera.zoom)
@@ -211,6 +242,7 @@ function kreem.draw()
     draw_enemies()
     draw_entering_room()
     draw_damage_indicator()
+    draw_death_screen()
     -- draw_physics_shapes()
 
     love.graphics.pop()
@@ -397,11 +429,14 @@ local function restore_enemies()
     end
 end
 
-
 local function handle_change_level(dt)
     if ChangeLevelJob.duration > 0 then
         LevelState = level_state_consts.LOADING
         ChangeLevelJob.duration = ChangeLevelJob.duration - dt
+        -- If this is the last update, set things game back to RUNNING
+        if ChangeLevelJob.duration > 0 then
+            LevelState = level_state_consts.RUNNING
+        end
 
         if not ChangeLevelJob.loaded then
             local direction = kreem_maps.load_next_map(ChangeLevelJob.direction)
@@ -417,8 +452,14 @@ local function handle_change_level(dt)
 
             ChangeLevelJob.loaded = true
         end
-    else
-        LevelState = level_state_consts.RUNNING
+    end
+end
+
+local function handle_death_screen(dt)
+    if (DeathScreenJob.duration > 0) then
+        DeathScreenJob.duration = DeathScreenJob.duration - dt
+        LevelState = level_state_consts.PAUSED
+        kreem_audio.stop_all()
     end
 end
 
@@ -432,10 +473,10 @@ function kreem.update(dt)
         handle_shooting_joystick(dt)
         handle_enemies(dt)
         handle_camera()
+        Player:update(dt)
     end
     handle_change_level(dt)
-
-    Player:update(dt)
+    handle_death_screen(dt)
 end
 
 collision.CollisionEmitter:on(consts.COLLISION_BULLET_WALL, function(bullet_data, wallData)

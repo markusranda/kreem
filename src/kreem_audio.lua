@@ -20,4 +20,10 @@ function kreem_audio.PlayMainSoundtrack()
     love.audio.setVolume(0.25)
 end
 
+function kreem_audio.stop_all()
+    for key, source in pairs(kreem_audio.sounds) do
+        source:stop()
+    end
+end
+
 return kreem_audio

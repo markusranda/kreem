@@ -11,6 +11,10 @@ function player:update(dt)
         self.run_anim:update(dt)
     end
 
+    if (self.hp <= 0) then
+        DeathScreenJob = { duration = DEATH_SCREEN_DURATION, running = true }
+    end
+
     if (self.prev_hp ~= self.hp) then
         kreem_audio.sounds.player_damage:stop()
         kreem_audio.sounds.player_damage:play()
