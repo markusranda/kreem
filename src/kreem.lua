@@ -15,7 +15,7 @@ local level_state_consts      = {
     RUNNING = "RUNNING",
     LOADING = "LOADING"
 }
-MAX_ENEMIES                   = 1
+MAX_ENEMIES                   = 4
 LEVEL_LOAD_TIME               = 0.5
 ChangeLevelJob                = { duration = 0, direction = "", loaded = true }
 LevelState                    = level_state_consts.RUNNING
@@ -31,8 +31,66 @@ Projectiles                   = {}
 Upgrades                      = {}
 CurrentMap                    = {}
 World                         = {}
-local spawn_timer             = 0
 local shooting_cooldown_timer = 0
+
+
+local function placeRandomlyWithinMap(object)
+    local width, height = CurrentMap.width * CurrentMap.tilewidth, CurrentMap.height * CurrentMap.tileheight
+    local x, y
+    local isValidPosition = false
+
+    while not isValidPosition do
+        local side = love.math.random(1, 4)
+
+        if side == 1 then -- top
+            x = love.math.random(0, width)
+            y = 0
+        elseif side == 2 then -- right
+            x = width
+            y = love.math.random(0, height)
+        elseif side == 3 then -- bottom
+            x = love.math.random(0, width)
+            y = height
+        else -- left
+            x = 0
+            y = love.math.random(0, height)
+        end
+
+        -- Set the position of the object
+        object.body:setPosition(x, y)
+
+        -- Check for collisions with walls
+        isValidPosition = true
+        World:queryBoundingBox(x - object.radius, y - object.radius, x + object.radius, y + object.radius,
+            function(fixture)
+                if fixture:getUserData().name == "Wall" then
+                    isValidPosition = false
+                    return false -- Terminate the query
+                end
+                return true
+            end)
+    end
+end
+
+local function spawn_enemy()
+    local newEnemy = nil
+    local rnd = math.random()
+    if rnd <= 0.05 then
+        newEnemy = enemy_finger_boss:create(0, 0)
+    else
+        newEnemy = enemy_finger:create(0, 0)
+    end
+
+    placeRandomlyWithinMap(newEnemy)
+
+    Enemies[newEnemy.id] = newEnemy
+end
+
+local function handle_spawn_enemies()
+    for i = 1, MAX_ENEMIES do
+        spawn_enemy()
+    end
+end
 
 
 function kreem.load()
@@ -55,6 +113,9 @@ function kreem.load()
 
     -- Load player
     Player = player:create()
+
+    -- Spawn all enemies for this room
+    handle_spawn_enemies()
 end
 
 function kreem.draw()
@@ -171,37 +232,6 @@ local function handle_movement(dt)
     local xVel = moveX * Player.speed
     local yVel = moveY * Player.speed
     Player.body:setLinearVelocity(xVel, yVel)
-end
-
-local function spawn_enemy()
-    local width, height = CurrentMap.width * CurrentMap.tilewidth, CurrentMap.height * CurrentMap.tileheight
-
-    -- Generate a random position within the window
-    local function getRandomBorderPosition()
-        local side = love.math.random(1, 4)
-        local x, y
-
-        if side == 1 then -- top
-            x = love.math.random(0, width)
-            y = 0
-        elseif side == 2 then -- right
-            x = width
-            y = love.math.random(0, height)
-        elseif side == 3 then -- bottom
-            x = love.math.random(0, width)
-            y = height
-        else -- left
-            x = 0
-            y = love.math.random(0, height)
-        end
-
-        return x, y
-    end
-
-    local posX, posY = getRandomBorderPosition()
-    local createdEnemy = enemy_finger_boss:create(posX, posY)
-
-    Enemies[createdEnemy.id] = createdEnemy
 end
 
 local function handle_enemies(dt)
@@ -345,6 +375,10 @@ local function handle_change_level(dt)
             Player.state = "idle"
             handle_camera()
 
+            -- Spawn all enemies for this room
+            handle_spawn_enemies()
+
+
             ChangeLevelJob.loaded = true
         end
     else
@@ -366,18 +400,6 @@ function kreem.update(dt)
     handle_change_level(dt)
 
     Player:update(dt)
-
-    spawn_timer = spawn_timer + dt
-
-
-    local enemy_count = 0
-    for _ in pairs(Enemies) do
-        enemy_count = enemy_count + 1
-    end
-    if spawn_timer >= 5 and enemy_count < MAX_ENEMIES then
-        spawn_timer = spawn_timer - 5
-        spawn_enemy()
-    end
 end
 
 collision.CollisionEmitter:on(consts.COLLISION_BULLET_WALL, function(bullet_data, wallData)
@@ -388,7 +410,9 @@ end)
 collision.CollisionEmitter:on(consts.COLLISION_BULLET_ENEMY, function(bullet_data, enemy_data)
     local enemy = Enemies[enemy_data.id]
     local pro = Projectiles[bullet_data.id]
-    enemy.hp = enemy.hp - pro.dmg
+    if pro then
+        enemy.hp = enemy.hp - pro.dmg
+    end
 
     -- Cleanup projectile
     bullet_data.body:destroy()
