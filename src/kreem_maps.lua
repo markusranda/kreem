@@ -1,8 +1,7 @@
 local sti        = require("src.sti")
-local player     = require("src.player")
 local collision  = require("src.collision.collision")
 local consts     = require("src.collision.consts")
-
+local MapNode    = require("src.map_node")
 local kreem_maps = {
     maps = {
         room_1 = sti("assets/maps/room_1.lua", { "box2d" }),
@@ -17,8 +16,6 @@ local kreem_maps = {
         west = {},
         east = {},
     },
-    root = {},
-    current_node = {}
 }
 
 -- Init maps_by_direction
@@ -43,25 +40,6 @@ local kreem_maps = {
         end
     end
 end)()
-
-local MapNode = {}
-MapNode.__index = MapNode
-
-function MapNode:new(name, map)
-    return setmetatable({
-        name = name,
-        map = map,
-        neighbors = {}
-    }, MapNode)
-end
-
-function MapNode:addNeighbor(direction, neighbor)
-    self.neighbors[direction] = neighbor
-end
-
-function MapNode:getNeighbor(direction)
-    return self.neighbors[direction]
-end
 
 local function create_object_fixtures(map, layer_name, objectName, category)
     local objectLayer = map.layers[layer_name]
@@ -124,7 +102,6 @@ end
 local function init_map(map)
     if CurrentMap then
         -- Clear current Box2D world
-        print("Destroying world, making space for a new.")
         World:destroy()
         World = love.physics.newWorld(0, 0)
     end
@@ -144,8 +121,8 @@ function kreem_maps.load_first_map()
     -- Setup root node
     local map = kreem_maps.maps["room_1"]
     local root_node = MapNode:new("room_1", map)
-    kreem_maps.root = root_node
-    kreem_maps.current_node = root_node
+    KreemWorld[CurrentLevel].root = root_node
+    KreemWorld[CurrentLevel].root = root_node
 
     init_map(map)
 end
@@ -175,7 +152,7 @@ end
 
 function kreem_maps.load_next_map(incoming_direction)
     local direction = get_opposite_direction(incoming_direction)
-    local current_node = kreem_maps.current_node
+    local current_node = KreemWorld[CurrentLevel].root
 
     -- Get next node from current_node if possible
     local next_node = current_node:getNeighbor(direction)
@@ -187,7 +164,7 @@ function kreem_maps.load_next_map(incoming_direction)
         next_node:addNeighbor(incoming_direction, current_node)
     end
 
-    kreem_maps.current_node = next_node
+    KreemWorld[CurrentLevel].root = next_node
     init_map(next_node.map)
 
     return direction

@@ -54,19 +54,22 @@ function enemy_finger:destroy()
         self.body:destroy()
     end
 
-    Enemies[self.id] = nil
+    KreemWorld[CurrentLevel].root.enemies[self.id] = nil
 end
 
-function enemy_finger:create(posX, posY)
-    local self = setmetatable({}, enemy_finger)
-    self.radius = 16
-    self.id = uuid.new()
-    self.body = love.physics.newBody(World, posX, posY, "dynamic")
+function enemy_finger:create_body(xPos, yPos)
+    self.body = love.physics.newBody(World, xPos, yPos, "dynamic")
     self.shape = love.physics.newCircleShape(self.radius)
     self.fixture = love.physics.newFixture(self.body, self.shape)
     self.fixture:setUserData({ name = "Enemy", body = self.body, id = self.id })
     self.fixture:setCategory(consts.COLLISION_CATEGORY_ENEMY)
     self.fixture:setMask(consts.COLLISION_CATEGORY_WALL, consts.COLLISION_CATEGORY_TELEPORT)
+end
+
+function enemy_finger:create(xPos, yPos)
+    local self = setmetatable({}, enemy_finger)
+    self.radius = 16
+    self.id = uuid.new()
     self.sprite = love.graphics.newImage("assets/finger.png")
     self.direction = { x = 0, y = -1 }
     self.speed = 150
@@ -76,6 +79,7 @@ function enemy_finger:create(posX, posY)
     self.attack_cooldown = 0.5
     self.loot = "Shotgun"
     self.loot_chance = 0.1
+    self:create_body(xPos, yPos)
 
     return self
 end

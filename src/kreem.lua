@@ -26,15 +26,22 @@ Camera                        = {
     zoom = 2
 }
 Player                        = {}
-Enemies                       = {}
 Projectiles                   = {}
 Upgrades                      = {}
 CurrentMap                    = {}
 World                         = {}
+
+-- Level -> Room ->
+KreemWorld                    = {
+    level_1 = {
+        root = {}
+    }
+}
+CurrentLevel                  = "level_1"
 local shooting_cooldown_timer = 0
 
 
-local function placeRandomlyWithinMap(object)
+local function place_randomly_within_map(object)
     local width, height = CurrentMap.width * CurrentMap.tilewidth, CurrentMap.height * CurrentMap.tileheight
     local x, y
     local isValidPosition = false
@@ -81,13 +88,14 @@ local function spawn_enemy()
         newEnemy = enemy_finger:create(0, 0)
     end
 
-    placeRandomlyWithinMap(newEnemy)
-
-    Enemies[newEnemy.id] = newEnemy
+    place_randomly_within_map(newEnemy)
+    KreemWorld[CurrentLevel].root.enemies[newEnemy.id] = newEnemy
+    KreemWorld[CurrentLevel].root.enemy_count = KreemWorld[CurrentLevel].root.enemy_count + 1
 end
 
 local function handle_spawn_enemies()
-    for i = 1, MAX_ENEMIES do
+    -- Add all untill full
+    for i = KreemWorld[CurrentLevel].root.enemy_count, MAX_ENEMIES do
         spawn_enemy()
     end
 end
@@ -149,7 +157,7 @@ function kreem.draw()
     end
 
     -- Draw enemies
-    for key, curEnemy in pairs(Enemies) do
+    for key, curEnemy in pairs(KreemWorld[CurrentLevel].root.enemies) do
         local angle = math.atan2(curEnemy.direction.y, curEnemy.direction.x) + math.pi / 2
         if not curEnemy.body:isDestroyed() then
             local original_radius = curEnemy.sprite:getWidth() / 2 -- Assuming the sprite is square
@@ -235,7 +243,7 @@ local function handle_movement(dt)
 end
 
 local function handle_enemies(dt)
-    for key, selectedEnemy in pairs(Enemies) do
+    for key, selectedEnemy in pairs(KreemWorld[CurrentLevel].root.enemies) do
         if selectedEnemy.hp <= 0 or selectedEnemy.body:isDestroyed() then
             selectedEnemy:destroy()
             return
@@ -361,6 +369,13 @@ local function handle_camera()
     Camera.y = y - (love.graphics.getHeight() / 2) / Camera.zoom
 end
 
+local function restore_enemies()
+    for key, enemy in pairs(KreemWorld[CurrentLevel].root.enemies) do
+        enemy:create_body(0, 0)
+        place_randomly_within_map(enemy)
+    end
+end
+
 
 local function handle_change_level(dt)
     if ChangeLevelJob.duration > 0 then
@@ -368,13 +383,13 @@ local function handle_change_level(dt)
         ChangeLevelJob.duration = ChangeLevelJob.duration - dt
 
         if not ChangeLevelJob.loaded then
-            print("Changing levels")
             local direction = kreem_maps.load_next_map(ChangeLevelJob.direction)
             local new_coords = kreem_teleport.teleport_player(direction)
             Player:create_body(new_coords.x, new_coords.y)
             Player.state = "idle"
             handle_camera()
 
+            restore_enemies()
             -- Spawn all enemies for this room
             handle_spawn_enemies()
 
@@ -408,7 +423,7 @@ collision.CollisionEmitter:on(consts.COLLISION_BULLET_WALL, function(bullet_data
 end)
 
 collision.CollisionEmitter:on(consts.COLLISION_BULLET_ENEMY, function(bullet_data, enemy_data)
-    local enemy = Enemies[enemy_data.id]
+    local enemy = KreemWorld[CurrentLevel].root.enemies[enemy_data.id]
     local pro = Projectiles[bullet_data.id]
     if pro then
         enemy.hp = enemy.hp - pro.dmg
@@ -420,7 +435,7 @@ collision.CollisionEmitter:on(consts.COLLISION_BULLET_ENEMY, function(bullet_dat
 end)
 
 collision.CollisionEmitter:on(consts.COLLISION_ENEMY_PLAYER, function(enemy_data, player_data)
-    Enemies[enemy_data.id]:attack_player()
+    KreemWorld[CurrentLevel].root.enemies[enemy_data.id]:attack_player()
 end)
 
 collision.CollisionEmitter:on(consts.COLLISION_UPGRADE_PLAYER, function(upgrade_data, player_data)
