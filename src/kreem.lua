@@ -1,5 +1,6 @@
 local projectile              = require("src.projectile")
 local enemy_finger            = require("src.enemy.finger")
+local enemy_finger_boss       = require("src.enemy.finger_boss")
 local collision               = require("src.collision.collision")
 local kreem_audio             = require("src.kreem_audio")
 local kreem_maps              = require("src.kreem_maps")
@@ -14,6 +15,7 @@ local level_state_consts      = {
     RUNNING = "RUNNING",
     LOADING = "LOADING"
 }
+MAX_ENEMIES                   = 1
 LEVEL_LOAD_TIME               = 0.5
 ChangeLevelJob                = { duration = 0, direction = "", loaded = true }
 LevelState                    = level_state_consts.RUNNING
@@ -89,9 +91,12 @@ function kreem.draw()
     for key, curEnemy in pairs(Enemies) do
         local angle = math.atan2(curEnemy.direction.y, curEnemy.direction.x) + math.pi / 2
         if not curEnemy.body:isDestroyed() then
+            local original_radius = curEnemy.sprite:getWidth() / 2 -- Assuming the sprite is square
+            local scale_factor = curEnemy.radius / original_radius
+
             local x, y = curEnemy.body:getPosition()
-            love.graphics.draw(curEnemy.sprite, x, y, angle, 1, 1, curEnemy.sprite:getWidth() / 2,
-                curEnemy.sprite:getHeight() / 2)
+            local w, h = curEnemy.sprite:getWidth() / 2, curEnemy.sprite:getHeight() / 2
+            love.graphics.draw(curEnemy.sprite, x, y, angle, scale_factor, scale_factor, w, h)
         end
     end
 
@@ -118,6 +123,7 @@ function kreem.draw()
     love.graphics.pop()
 
     -- Draw UI
+    love.graphics.setColor(1, 1, 1)
     ui_hp.draw_hp(Player)
     for key, bool in pairs(Player.upgrades) do
         local width = love.graphics.getWidth()
@@ -193,7 +199,7 @@ local function spawn_enemy()
     end
 
     local posX, posY = getRandomBorderPosition()
-    local createdEnemy = enemy_finger:create(posX, posY)
+    local createdEnemy = enemy_finger_boss:create(posX, posY)
 
     Enemies[createdEnemy.id] = createdEnemy
 end
@@ -362,7 +368,13 @@ function kreem.update(dt)
     Player:update(dt)
 
     spawn_timer = spawn_timer + dt
-    if spawn_timer >= 5 then
+
+
+    local enemy_count = 0
+    for _ in pairs(Enemies) do
+        enemy_count = enemy_count + 1
+    end
+    if spawn_timer >= 5 and enemy_count < MAX_ENEMIES then
         spawn_timer = spawn_timer - 5
         spawn_enemy()
     end
