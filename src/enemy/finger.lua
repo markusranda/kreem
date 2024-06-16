@@ -45,18 +45,20 @@ function enemy_finger:attack_player()
 end
 
 function enemy_finger:destroy()
-    -- Check if player gets drop
-    local rand = math.random()
-    if rand <= self.loot_chance then
-        local x, y = self.body:getPosition()
-        local shotgun = shotgun:create(x, y)
-        Upgrades[shotgun.id] = shotgun
+    -- In some cases the enemies gets destroyed by world, then we need to skip this logic
+    if not self.body:isDestroyed() then
+        -- Check if player gets drop
+        local rand = math.random()
+        if rand <= self.loot_chance then
+            local x, y = self.body:getPosition()
+            local shotgun = shotgun:create(x, y)
+            Upgrades[shotgun.id] = shotgun
+        end
+
+        self.body:destroy()
     end
 
     Enemies[self.id] = nil
-    if not self.body:isDestroyed() then
-        self.body:destroy()
-    end
 end
 
 function enemy_finger.create(posX, posY)

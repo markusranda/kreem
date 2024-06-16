@@ -1,77 +1,66 @@
-local player = {}
 local anim8 = require("src.anim8")
 local consts = require("src.collision.consts")
+local player = {}
+player.__index = player
 
-PlayerSheet = {}
-IdleAnim = {}
-RunAnim = {}
-
-local function loadSprites()
-    PlayerSheet = love.graphics.newImage('assets/player-sheet.png')
-    local g = anim8.newGrid(32, 32, PlayerSheet:getWidth(), PlayerSheet:getHeight())
-
-    IdleAnim = anim8.newAnimation(g('2-3', 1), 1)
-    RunAnim = anim8.newAnimation(g('2-8', 2), 0.08)
-    ArmSprite = anim8.newAnimation(g('2-2', 3), 10)
-end
-
-local function updatePlayer(self, dt)
+function player:update(dt)
     if self.state == "idle" then
-        IdleAnim:update(dt)
+        self.idle_anim:update(dt)
     elseif self.state == "run" then
-        RunAnim:update(dt)
+        self.run_anim:update(dt)
     end
 end
 
-local function drawPlayer(self)
+function player:draw()
     local scaleX = self.direction.x < 0 and -1 or 1
     local originX = 32 / 2
     local originY = 32 / 2 + (self.radius / 2)
 
     local maxArmLength = 5
-    local x, y = Player.body:getPosition()
+    local x, y = self.body:getPosition()
     local aimOffsetX = (self.aimPos.x - x) * (maxArmLength / love.graphics.getWidth()) * self.direction.x
     local aimOffsetY = (self.aimPos.y - y) * (maxArmLength / love.graphics.getHeight())
     local frontArmX = originX - 22 - aimOffsetX
     local backArmX = frontArmX - 3
     local armY = originY - 22 - aimOffsetY
 
-    ArmSprite:draw(PlayerSheet, x, y, 0, scaleX, 1, backArmX, armY)
+    self.arm_sprite:draw(self.player_sheet, x, y, 0, scaleX, 1, backArmX, armY)
 
     if self.state == "idle" then
-        IdleAnim:draw(PlayerSheet, x, y, 0, scaleX, 1, originX, originY)
+        self.idle_anim:draw(self.player_sheet, x, y, 0, scaleX, 1, originX, originY)
     elseif self.state == "run" then
-        RunAnim:draw(PlayerSheet, x, y, 0, scaleX, 1, originX, originY)
+        self.run_anim:draw(self.player_sheet, x, y, 0, scaleX, 1, originX, originY)
     else
-        error("Invalid state> ", self.state)
+        error(string.format("Invalid state: %s", self.state))
     end
 
-    ArmSprite:draw(PlayerSheet, x, y, 0, scaleX, 1, frontArmX, armY)
+    self.arm_sprite:draw(self.player_sheet, x, y, 0, scaleX, 1, frontArmX, armY)
 end
 
+function player:create()
+    self.player_sheet = love.graphics.newImage('assets/player-sheet.png')
+    self.g = anim8.newGrid(32, 32, self.player_sheet:getWidth(), self.player_sheet:getHeight())
+    self.idle_anim = anim8.newAnimation(self.g('2-3', 1), 1)
+    self.run_anim = anim8.newAnimation(self.g('2-8', 2), 0.08)
+    self.arm_sprite = anim8.newAnimation(self.g('2-2', 3), 10)
+    self.sprite = love.graphics.newImage("assets/hat.png")
+    self.direction = { x = 0, y = -1 }
+    self.aimPos = { x = 0, y = 0 }
+    self.dmg = 50
+    self.radius = 10
+    self.hp = 100
+    self.speed = 200
+    self.upgrades = {}
+    self.state = "idle"
+    self:create_body()
 
-local function create_player()
-    loadSprites()
-    return {
-        sprite = love.graphics.newImage("assets/hat.png"),
-        direction = { x = 0, y = -1 },
-        aimPos = { x = 0, y = 0 },
-        dmg = 50,
-        radius = 10,
-        hp = 100,
-        speed = 200,
-        upgrades = {},
-        update = updatePlayer,
-        draw = drawPlayer,
-        state = "idle"
-    }
+    return self
 end
 
-function player.InitPlayer(xPos, yPos)
+function player:create_body(xPos, yPos)
     -- Initialize player
     local mapWidth = CurrentMap.width * CurrentMap.tilewidth
     local mapHeight = CurrentMap.height * CurrentMap.tileheight
-    Player = create_player()
     if not xPos then
         xPos = mapWidth / 2
     end
@@ -80,13 +69,13 @@ function player.InitPlayer(xPos, yPos)
     end
 
     -- Make player a physics object
-    Player.body = love.physics.newBody(World, xPos, yPos, "dynamic")
-    Player.shape = love.physics.newCircleShape(Player.radius)
+    self.body = love.physics.newBody(World, xPos, yPos, "dynamic")
+    self.shape = love.physics.newCircleShape(self.radius)
 
-    Player.fixture = love.physics.newFixture(Player.body, Player.shape)
-    Player.fixture:setUserData({ name = "Player" })
-    Player.fixture:setCategory(consts.COLLISION_CATEGORY_PLAYER)
-    Player.fixture:setMask(consts.COLLISION_CATEGORY_PROJECTILE)
+    self.fixture = love.physics.newFixture(self.body, self.shape)
+    self.fixture:setUserData({ name = "Player" })
+    self.fixture:setCategory(consts.COLLISION_CATEGORY_PLAYER)
+    self.fixture:setMask(consts.COLLISION_CATEGORY_PROJECTILE)
 end
 
 return player

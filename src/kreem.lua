@@ -6,8 +6,17 @@ local kreem_maps              = require("src.kreem_maps")
 local ui_hp                   = require("src.ui.ui_hp")
 local consts                  = require("src.collision.consts")
 local upgrade_consts          = require("src.upgrade.upgrade_consts")
+local kreem_teleport          = require("src.kreem_teleport")
+local player                  = require("src.player")
 local kreem                   = {}
 
+local level_state_consts      = {
+    RUNNING = "RUNNING",
+    LOADING = "LOADING"
+}
+LEVEL_LOAD_TIME               = 0.5
+ChangeLevelJob                = { duration = 0, direction = "", loaded = true }
+LevelState                    = level_state_consts.RUNNING
 SHOOTING_COOLDOWN             = 0.5
 Camera                        = {
     x = 0,
@@ -40,6 +49,9 @@ function kreem.load()
 
     -- Load map
     kreem_maps.load_first_map()
+
+    -- Load player
+    Player = player:create()
 end
 
 function kreem.draw()
@@ -50,11 +62,6 @@ function kreem.draw()
     -- Draw map
     love.graphics.setColor(1, 1, 1)
     CurrentMap:draw(-Camera.x, -Camera.y, Camera.zoom, Camera.zoom)
-
-    -- Draw Collision CurrentMap (useful for debugging)
-    love.graphics.setColor(1, 0, 0)
-    CurrentMap:box2d_draw()
-    love.graphics.setColor(1, 1, 1)
 
     -- Draw player
     Player:draw()
@@ -86,6 +93,16 @@ function kreem.draw()
                 curEnemy.sprite:getHeight() / 2)
         end
     end
+
+    -- Draw the entire scene with the blur effect
+    local transparency = ChangeLevelJob.duration / LEVEL_LOAD_TIME
+    local camWidth = love.graphics.getWidth() / Camera.zoom
+    local camHeight = love.graphics.getHeight() / Camera.zoom
+    local camX = Camera.x
+    local camY = Camera.y
+
+    love.graphics.setColor(0, 0, 0, transparency)
+    love.graphics.rectangle("fill", camX, camY, camWidth, camHeight)
 
     -- Draw physics shapes for debugging
     -- for _, body in pairs(World:getBodies()) do
@@ -182,7 +199,7 @@ end
 
 local function handle_enemies(dt)
     for key, selectedEnemy in pairs(Enemies) do
-        if selectedEnemy.hp <= 0 then
+        if selectedEnemy.hp <= 0 or selectedEnemy.body:isDestroyed() then
             selectedEnemy:destroy()
             return
         end
@@ -307,15 +324,39 @@ local function handle_camera()
     Camera.y = y - (love.graphics.getHeight() / 2) / Camera.zoom
 end
 
-function kreem.update(dt)
-    CurrentMap:update(dt)
-    World:update(dt)
 
-    handle_movement(dt)
-    handle_shooting_timer(dt)
-    handle_shooting_joystick(dt)
-    handle_enemies(dt)
-    handle_camera()
+local function handle_change_level(dt)
+    if ChangeLevelJob.duration > 0 then
+        LevelState = level_state_consts.LOADING
+        ChangeLevelJob.duration = ChangeLevelJob.duration - dt
+
+        if not ChangeLevelJob.loaded then
+            print("Changing levels")
+            local direction = kreem_maps.load_next_map(ChangeLevelJob.direction)
+            local new_coords = kreem_teleport.teleport_player(direction)
+            Player:create_body(new_coords.x, new_coords.y)
+            Player.state = "idle"
+            handle_camera()
+
+            ChangeLevelJob.loaded = true
+        end
+    else
+        LevelState = level_state_consts.RUNNING
+    end
+end
+
+function kreem.update(dt)
+    if LevelState == level_state_consts.RUNNING then
+        CurrentMap:update(dt)
+        World:update(dt)
+
+        handle_movement(dt)
+        handle_shooting_timer(dt)
+        handle_shooting_joystick(dt)
+        handle_enemies(dt)
+        handle_camera()
+    end
+    handle_change_level(dt)
 
     Player:update(dt)
 
@@ -348,6 +389,10 @@ end)
 collision.CollisionEmitter:on(consts.COLLISION_UPGRADE_PLAYER, function(upgrade_data, player_data)
     Player.upgrades[upgrade_data.type] = true
     Upgrades[upgrade_data.id]:destroy()
+end)
+
+collision.CollisionEmitter:on(consts.COLLISION_PLAYER_TELEPORT, function(player_data, teleport_data)
+    ChangeLevelJob = { direction = teleport_data.properties.direction, duration = LEVEL_LOAD_TIME, loaded = false }
 end)
 
 return kreem
