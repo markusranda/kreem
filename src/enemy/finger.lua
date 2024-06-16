@@ -75,7 +75,7 @@ function enemy_finger:create(posX, posY)
     self.attack_timer = 0
     self.attack_cooldown = 0.5
     self.loot = "Shotgun"
-    self.loot_chance = 1
+    self.loot_chance = 0.1
 
     return self
 end
