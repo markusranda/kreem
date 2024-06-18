@@ -10,6 +10,7 @@ local upgrade_consts          = require("src.upgrade.upgrade_consts")
 local kreem_teleport          = require("src.kreem_teleport")
 local player                  = require("src.player")
 local ui_upgrades             = require("src.ui.ui_upgrades")
+local floors                  = require("src.kreem_floors")
 local kreem                   = {}
 
 local level_state_consts      = {
@@ -128,6 +129,8 @@ function kreem.load()
 
     -- Spawn all enemies for this room
     handle_spawn_enemies()
+
+    Floor_plan_grid = floors:generate_floor(1)
 end
 
 local function draw_damage_indicator()
@@ -140,6 +143,26 @@ local function draw_damage_indicator()
 
         love.graphics.setColor(1, 0, 0, transparency)
         love.graphics.rectangle("fill", camX, camY, camWidth, camHeight)
+    end
+end
+
+local function draw_floor_plan()
+    for i, row in pairs(Floor_plan_grid) do
+        for j, room in pairs(row) do
+            if room then
+                local x = room.x
+                local y = room.y
+                if room.dead_end == true then
+                    love.graphics.setColor(1, 0, 0)
+                else
+                    love.graphics.setColor(0, 1, 0)
+                end
+                love.graphics.rectangle("line", x * 32, y * 32, 32, 32)
+                -- draw room coordinates
+                love.graphics.setColor(1, 1, 1)
+                love.graphics.print(x .. ", " .. y, x * 32, y * 32)
+            end
+        end
     end
 end
 
@@ -251,6 +274,8 @@ function kreem.draw()
     love.graphics.setColor(1, 1, 1)
     ui_hp.draw(Player)
     ui_upgrades.draw(Player)
+
+    draw_floor_plan()
 end
 
 local function handle_movement(dt)
