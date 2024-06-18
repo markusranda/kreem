@@ -11,6 +11,7 @@ local kreem_teleport          = require("src.kreem_teleport")
 local player                  = require("src.player")
 local ui_upgrades             = require("src.ui.ui_upgrades")
 local floors                  = require("src.kreem_floors")
+local damage_numbers          = require("src.damage_numbers")
 local kreem                   = {}
 
 local level_state_consts      = {
@@ -44,7 +45,6 @@ KreemWorld                    = {
 }
 CurrentLevel                  = "level_1"
 local shooting_cooldown_timer = 0
-
 
 local function place_randomly_within_map(object)
     local width, height = CurrentMap.width * CurrentMap.tilewidth, CurrentMap.height * CurrentMap.tileheight
@@ -263,6 +263,7 @@ function kreem.draw()
     draw_upgrades()
     draw_projectiles()
     draw_enemies()
+    damage_numbers:draw()
     draw_entering_room()
     draw_damage_indicator()
     draw_death_screen()
@@ -275,7 +276,7 @@ function kreem.draw()
     ui_hp.draw(Player)
     ui_upgrades.draw(Player)
 
-    draw_floor_plan()
+    -- draw_floor_plan()
 end
 
 local function handle_movement(dt)
@@ -497,6 +498,7 @@ function kreem.update(dt)
         handle_shooting_timer(dt)
         handle_shooting_joystick(dt)
         handle_enemies(dt)
+        damage_numbers:update(dt)
         handle_camera()
         Player:update(dt)
     end
@@ -514,6 +516,8 @@ collision.CollisionEmitter:on(consts.COLLISION_BULLET_ENEMY, function(bullet_dat
     local pro = Projectiles[bullet_data.id]
     if pro then
         enemy.hp = enemy.hp - pro.dmg
+        local ex, ey = enemy.body:getPosition()
+        damage_numbers.add_damage_number(ex, ey, pro.dmg)
     end
 
     -- Cleanup projectile
